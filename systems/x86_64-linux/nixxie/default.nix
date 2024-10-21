@@ -154,7 +154,7 @@ in {
   users.users.bibi = {
     isNormalUser = true;
     description = "bibi";
-    extraGroups = ["networkmanager" "wheel" "libvirtd"];
+    extraGroups = ["networkmanager" "wheel" "libvirtd" "docker"];
     shell = pkgs.fish;
   };
 
@@ -206,6 +206,8 @@ in {
       };
     };
   };
+
+  virtualisation.docker.enable = true;
 
   home-manager = {
     useGlobalPkgs = true;
