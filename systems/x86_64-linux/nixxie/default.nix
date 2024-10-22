@@ -77,19 +77,23 @@ in {
       anki
       apktool
       bat
-      burpsuite
+      black
       blender
+      burpsuite
       cabal-install
+      code-cursor
       curl
       exploitdb
       fd
       ffmpeg
       firefox
+      file
       fish
       gh
       ghc
       ghidra-bin
       git
+      glow
       gobuster
       google-chrome
       grim
@@ -98,6 +102,8 @@ in {
       htop
       imagemagick
       imv
+      internal.assemblyai-cli
+      isort
       jadx
       john
       jsbeautifier
@@ -105,10 +111,9 @@ in {
       kmod
       libvirt
       metasploit
-      texliveTeTeX
-      glow
       moreutils
       mpv
+      neovim
       netcat
       nmap
       obsidian
@@ -128,10 +133,13 @@ in {
       sqlmap
       stack
       stegseek
+      # super-slicer
       swtpm
+      texliveTeTeX
       tmux
       unixtools.xxd
       unzip
+      uv
       vdhcoapp
       veracrypt
       vscode
@@ -142,13 +150,6 @@ in {
       yt-dlp
       zip
       zoxide
-      aichat
-      blender
-      code-cursor
-      neovim
-      super-slicer
-      uv
-      internal.assemblyai-cli
       (pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" ''
         qemu-system-x86_64 \
           -bios ${pkgs.OVMF.fd}/FV/OVMF.fd \
