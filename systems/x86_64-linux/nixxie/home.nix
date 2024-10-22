@@ -37,7 +37,7 @@
     };
 
     vscode = {
-      enable = true;
+      enable = false;
       extensions = with pkgs.vscode-extensions; [
         albymor.increment-selection
         bbenoist.nix
