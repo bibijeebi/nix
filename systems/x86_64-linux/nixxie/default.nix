@@ -41,14 +41,15 @@ in {
   };
 
   services = {
-    displayManager.sddm.wayland.enable = true;
-    displayManager.sddm.enable = true;
-    displayManager.autoLogin.enable = true;
-    displayManager.autoLogin.user = "bibi";
-    desktopManager.plasma6.enable = true;
+    # displayManager.sddm.wayland.enable = true;
+    # displayManager.sddm.enable = true;
+    # displayManager.autoLogin.enable = true;
+    # displayManager.autoLogin.user = "bibi";
+    # desktopManager.plasma6.enable = true;
 
     xserver = {
       enable = true;
+      displayManager.lightdm.enable = true;
       displayManager.defaultSession = "xfce";
       desktopManager = {
         xterm.enable = false;
