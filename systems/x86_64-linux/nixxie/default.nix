@@ -47,11 +47,13 @@ in {
     displayManager.autoLogin.user = "bibi";
     desktopManager.plasma6.enable = true;
 
-    xserver.enable = true;
-    displayManager.defaultSession = "xfce";
-    desktopManager = {
-      xterm.enable = false;
-      xfce.enable = true;
+    xserver = {
+      enable = true;
+      displayManager.defaultSession = "xfce";
+      desktopManager = {
+        xterm.enable = false;
+        xfce.enable = true;
+      };
     };
 
     printing.enable = true;
