@@ -41,20 +41,20 @@ in {
   };
 
   services = {
-    # displayManager.sddm.wayland.enable = true;
-    # displayManager.sddm.enable = true;
-    # displayManager.autoLogin.enable = true;
-    # displayManager.autoLogin.user = "bibi";
-    # desktopManager.plasma6.enable = true;
+    displayManager.sddm.wayland.enable = true;
+    displayManager.sddm.enable = true;
+    displayManager.autoLogin.enable = true;
+    displayManager.autoLogin.user = "bibi";
+    desktopManager.plasma6.enable = true;
 
-    displayManager.defaultSession = "cinnamon";
-    xserver = {
-      enable = true;
-      displayManager.lightdm.enable = true;
-      desktopManager = {
-        cinnamon.enable = true;
-      };
-    };
+    # displayManager.defaultSession = "cinnamon";
+    # xserver = {
+    #   enable = true;
+    #   displayManager.lightdm.enable = true;
+    #   desktopManager = {
+    #     cinnamon.enable = true;
+    #   };
+    # };
 
     printing.enable = true;
     pipewire = {
