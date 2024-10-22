@@ -146,6 +146,7 @@ in {
       socat
       sqlmap
       stack
+      qimgv
       stegseek
       # super-slicer
       swtpm
@@ -162,6 +163,7 @@ in {
       wordlists
       yazi
       yt-dlp
+      xclip
       zip
       zoxide
       (pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" ''
