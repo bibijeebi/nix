@@ -82,6 +82,7 @@ in {
       burpsuite
       cabal-install
       code-cursor
+      chromium
       curl
       exploitdb
       fd
@@ -89,6 +90,8 @@ in {
       firefox
       file
       fish
+      expect
+      gcc
       gh
       ghc
       ghidra-bin
@@ -122,6 +125,7 @@ in {
       pavucontrol
       pciutils
       poppler_utils
+      firefox
       powershell
       qemu
       quickemu
