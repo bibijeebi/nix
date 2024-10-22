@@ -78,11 +78,11 @@ in {
       apktool
       bat
       black
-      blender
+      # blender
       burpsuite
       cabal-install
       code-cursor
-      chromium
+      # chromium
       curl
       exploitdb
       fd
@@ -146,7 +146,7 @@ in {
       uv
       vdhcoapp
       veracrypt
-      vscode
+      # vscode
       wget
       wl-clipboard
       wordlists
