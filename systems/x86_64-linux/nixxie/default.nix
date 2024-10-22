@@ -142,6 +142,12 @@ in {
       yt-dlp
       zip
       zoxide
+      aichat
+      blender
+      code-cursor
+      neovim
+      super-slicer
+      uv
       internal.assemblyai-cli
       (pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" ''
         qemu-system-x86_64 \

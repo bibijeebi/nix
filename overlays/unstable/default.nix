@@ -4,8 +4,8 @@
     aichat
     blender
     code-cursor
+    neovim
     super-slicer
-    vscode
     uv
     ;
 }
