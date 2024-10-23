@@ -194,6 +194,7 @@ in {
   environment.systemPackages = with pkgs; [
     # Development Tools
     aichat
+    code-cursor
     gcc
     gh
     git
