@@ -15,6 +15,7 @@
       inputs.nixpkgs.follows = "unstable";
     };
     nixarr.url = "github:rasmus-kirk/nixarr";
+    erosanix.url = "github:emmanuelrosa/erosanix";
   };
 
   outputs = inputs:
