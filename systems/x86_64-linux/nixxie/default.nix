@@ -8,6 +8,7 @@ in {
   imports = [./hardware.nix];
 
   boot.supportedFilesystems = ["fuse"];
+  boot.kernel.sysctl."kernel.unprivileged_userns_clone" = 1;
 
   boot.loader = {
     systemd-boot.enable = true;
@@ -187,11 +188,6 @@ in {
     sudo.wheelNeedsPassword = false;
     rtkit.enable = true;
   };
-
-  # systemd.services = {
-  #   "getty@tty1".enable = false;
-  #   "autovt@tty1".enable = false;
-  # };
 
   programs = {
     firefox.enable = true;

@@ -2,7 +2,7 @@
   lib,
   inputs,
   fetchurl,
-  wine64,
+  wine64, # Explicitly use wine64
   stdenv,
   makeDesktopItem,
   copyDesktopItems,
@@ -36,6 +36,8 @@
   };
 in
   mkWindowsApp rec {
+    inherit (wine64) wine; # Use wine64's wine
+
     pname = "autodesk-fusion360";
     version = "latest";
 
@@ -59,54 +61,47 @@ in
       sha256 = "1wy044ar27kyd7vq01axq0izw6hbkgjqacjgkshikxa3c5j6vs5a";
     };
 
-    wine = wine64; # Explicitly use 64-bit Wine
-
     dontUnpack = true;
     wineArch = "win64";
-
-    buildInputs = [
-      wine64
-      winetricks
-      gdk-pixbuf.out # Add .out output
-    ];
-
-    runtimeInputs = [
-      wine64
-      winetricks
-      gdk-pixbuf.out
-      fuse
-    ];
 
     nativeBuildInputs = [
       copyDesktopItems
       p7zip
       winetricks
-      fuse
-      gdk-pixbuf.out
+      gdk-pixbuf
       notify-desktop
     ];
 
-    # Add required environment variables
-    preInstall = ''
-      export GDK_PIXBUF_MODULE_FILE="${gdk-pixbuf.out}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
-    '';
+    buildInputs = [
+      wine64
+      fuse
+    ];
 
-    winAppInstall = ''
-      # Ensure WINEARCH is set before any Wine commands
-      export WINEARCH=win64
-      export WINEPREFIX="$PWD/wine.prefix"
-      export PATH=${wine64}/bin:$PATH
+    # Add runtime dependencies
+    runtimeInputs = [
+      wine64
+      p7zip
+      winetricks
+      gdk-pixbuf
+      fuse
+    ];
 
-      # Initialize wine prefix
-      wineboot --init
+    enableInstallNotification = true;
 
-      # Wait for wineboot to finish
+    # Initialize WINEPREFIX before installation
+    winAppPreInstall = ''
+      # Ensure clean WINEPREFIX
+      rm -rf "$WINEPREFIX"
+      # Initialize 64-bit prefix
+      WINEARCH=win64 wineboot --init
       while pgrep wineboot >/dev/null; do
         sleep 1
       done
+    '';
 
+    winAppInstall = ''
       # Configure Wine
-      ${winetricks}/bin/winetricks -q atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017 fontsmooth=rgb winhttp win10
+      winetricks -q atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017 fontsmooth=rgb winhttp win10
 
       # Configure registry
       wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "adpclientservice.exe" /t REG_SZ /d "" /f
@@ -135,29 +130,17 @@ in
     '';
 
     winAppRun = ''
-      # Set up environment
-      export WINEARCH=win64
-      export PATH=${wine64}/bin:$PATH
-      export GDK_PIXBUF_MODULE_FILE="${gdk-pixbuf.out}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
-
-      # Configure data directories
-      data_dir="$HOME/.local/share/fusion360"
-      if [ ! -d "$data_dir" ]; then
-        mkdir -p "$data_dir"
-      fi
-
-      # Run Fusion 360
       wine "C:/Program Files/Autodesk/Fusion 360/Fusion360.exe" "$ARGS"
-      wineserver -w
     '';
 
-    enableVulkan = false;
-    persistRegistry = true;
-
+    # File mapping for persistence
     fileMap = {
       "$HOME/.config/Autodesk/Fusion360" = "drive_c/users/$USER/Application Data/Autodesk/Fusion360";
       "$HOME/.local/share/fusion360" = "drive_c/users/$USER/Documents/Fusion360";
     };
+
+    # Enable registry persistence
+    persistRegistry = true;
 
     installPhase = ''
       runHook preInstall
