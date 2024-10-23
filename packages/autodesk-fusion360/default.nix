@@ -64,21 +64,49 @@ in
     dontUnpack = true;
     wineArch = "win64";
 
+    buildInputs = [
+      wine64
+      winetricks
+      gdk-pixbuf.out # Add .out output
+    ];
+
+    runtimeInputs = [
+      wine64
+      winetricks
+      gdk-pixbuf.out
+      fuse
+    ];
+
     nativeBuildInputs = [
       copyDesktopItems
       p7zip
       winetricks
       fuse
-      gdk-pixbuf
+      gdk-pixbuf.out
       notify-desktop
     ];
+
+    # Add required environment variables
+    preInstall = ''
+      export GDK_PIXBUF_MODULE_FILE="${gdk-pixbuf.out}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+    '';
 
     winAppInstall = ''
       # Ensure WINEARCH is set before any Wine commands
       export WINEARCH=win64
+      export WINEPREFIX="$PWD/wine.prefix"
+      export PATH=${wine64}/bin:$PATH
+
+      # Initialize wine prefix
+      wineboot --init
+
+      # Wait for wineboot to finish
+      while pgrep wineboot >/dev/null; do
+        sleep 1
+      done
 
       # Configure Wine
-      ${winetricks}/bin/winetricks atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017 fontsmooth=rgb winhttp win10
+      ${winetricks}/bin/winetricks -q atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017 fontsmooth=rgb winhttp win10
 
       # Configure registry
       wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "adpclientservice.exe" /t REG_SZ /d "" /f
@@ -89,6 +117,7 @@ in
 
       # Install WebView2
       wine ${webview2} /silent /install
+      wineserver -w
 
       # Install Fusion 360
       wine ${src} --quiet
@@ -106,6 +135,11 @@ in
     '';
 
     winAppRun = ''
+      # Set up environment
+      export WINEARCH=win64
+      export PATH=${wine64}/bin:$PATH
+      export GDK_PIXBUF_MODULE_FILE="${gdk-pixbuf.out}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+
       # Configure data directories
       data_dir="$HOME/.local/share/fusion360"
       if [ ! -d "$data_dir" ]; then
