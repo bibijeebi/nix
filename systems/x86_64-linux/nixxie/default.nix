@@ -190,8 +190,6 @@ in {
     rtkit.enable = true;
   };
 
-  programs.gnupg.agent.pinentryPackage = lib.mkForce pkgs.pinentry-gnome3;
-
   programs = {
     firefox.enable = true;
     dconf.enable = true;
@@ -199,6 +197,7 @@ in {
     gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
+      pinentryPackage = lib.mkForce pkgs.pinentry-gnome3;
     };
     nix-index.enable = true;
     command-not-found.enable = false;
