@@ -7,6 +7,8 @@
 in {
   imports = [./hardware.nix];
 
+  boot.supportedFilesystems = ["fuse"];
+
   boot.loader = {
     systemd-boot.enable = true;
     efi.canTouchEfiVariables = true;
@@ -177,7 +179,7 @@ in {
   users.users.bibi = {
     isNormalUser = true;
     description = "bibi";
-    extraGroups = ["networkmanager" "wheel" "libvirtd" "docker"];
+    extraGroups = ["networkmanager" "wheel" "libvirtd" "docker" "fuse"];
     shell = pkgs.fish;
   };
 
