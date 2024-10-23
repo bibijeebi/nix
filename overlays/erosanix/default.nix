@@ -1,6 +1,5 @@
 {
   channels,
-  namespace,
   inputs,
   ...
 }: final: prev: {
