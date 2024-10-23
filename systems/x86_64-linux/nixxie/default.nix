@@ -8,24 +8,29 @@
 in {
   imports = [./hardware.nix];
 
-  boot.supportedFilesystems = ["fuse"];
-  boot.kernel.sysctl."kernel.unprivileged_userns_clone" = 1;
+  # System Configuration
+  system.stateVersion = "24.05";
+  nixpkgs.config.allowUnfree = true;
+  nix.settings.experimental-features = ["nix-command" "flakes"];
+  time.timeZone = "America/New_York";
 
-  boot.loader = {
-    systemd-boot.enable = true;
-    efi.canTouchEfiVariables = true;
+  # Boot Configuration
+  boot = {
+    supportedFilesystems = ["fuse"];
+    kernel.sysctl."kernel.unprivileged_userns_clone" = 1;
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
   };
 
+  # Networking
   networking = {
     hostName = "nixxie";
     networkmanager.enable = true;
   };
 
-  fonts.packages = with pkgs; [
-    (nerdfonts.override {fonts = ["FiraCode" "CascadiaCode" "DaddyTimeMono" "Meslo" "SourceCodePro" "Ubuntu"];})
-  ];
-
-  time.timeZone = "America/New_York";
+  # Internationalization
   i18n = {
     defaultLocale = locale;
     extraLocaleSettings = builtins.listToAttrs (map (key: {
@@ -44,19 +49,28 @@ in {
       ]);
   };
 
+  # Desktop Environment
   programs.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
   };
 
+  # Display and Desktop Services
   services = {
-    displayManager.sddm.wayland.enable = true;
-    displayManager.sddm.enable = true;
-    displayManager.autoLogin.enable = true;
-    displayManager.autoLogin.user = "bibi";
+    displayManager = {
+      sddm = {
+        enable = true;
+        wayland.enable = true;
+      };
+      autoLogin = {
+        enable = true;
+        user = "bibi";
+      };
+    };
     desktopManager.plasma6.enable = true;
+    gnome.gnome-keyring.enable = true;
 
-    printing.enable = true;
+    # Audio
     pipewire = {
       enable = true;
       alsa = {
@@ -65,6 +79,9 @@ in {
       };
       pulse.enable = true;
     };
+
+    # Other Services
+    printing.enable = true;
     avahi = {
       enable = true;
       nssmdns4 = true;
@@ -76,109 +93,69 @@ in {
     };
   };
 
-  services.gnome.gnome-keyring.enable = true;
-
+  # Audio Configuration
   hardware.pulseaudio.enable = false;
 
-  environment = {
-    systemPackages = with pkgs; [
-      (hiPrio parallel)
-      # blender
-      # chromium
-      # super-slicer
-      # vscode
-      aichat
-      alejandra
-      android-tools
-      anki
-      apktool
-      bat
-      black
-      burpsuite
-      cabal-install
-      code-cursor
-      curl
-      expect
-      exploitdb
-      fd
-      ffmpeg
-      file
-      firefox
-      fish
-      gcc
-      gh
-      ghc
-      ghidra-bin
-      git
-      glow
-      gobuster
-      google-chrome
-      grim
-      grim # screenshot functionality
-      hashcat
-      haskell-language-server
-      htop
-      imagemagick
-      imv
-      internal.assemblyai-cli
-      isort
-      jadx
-      john
-      jsbeautifier
-      kitty
-      kmod
-      libvirt
-      mako # notification system developed by swaywm maintainer
-      metasploit
-      moreutils
-      mpv
-      neovim
-      netcat
-      nmap
-      obsidian
-      openvpn
-      pandoc
-      pavucontrol
-      pciutils
-      poppler_utils
-      powershell
-      qemu
-      qimgv
-      quickemu
-      realesrgan-ncnn-vulkan
-      ripgrep
-      slurp
-      slurp # screenshot functionality
-      snowfallorg.flake
-      socat
-      sqlmap
-      stack
-      stegseek
-      swtpm
-      texliveTeTeX
-      tmux
-      unixtools.xxd
-      unzip
-      uv
-      vdhcoapp
-      veracrypt
-      wget
-      wl-clipboard
-      wl-clipboard # wl-copy and wl-paste for copy/paste from stdin / stdout
-      wordlists
-      xclip
-      yazi
-      yt-dlp
-      zip
-      zoxide
-      (pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" ''
-        qemu-system-x86_64 \
-          -bios ${pkgs.OVMF.fd}/FV/OVMF.fd \
-          "$@"
-      '')
-    ];
+  # Security
+  security = {
+    sudo.wheelNeedsPassword = false;
+    rtkit.enable = true;
   };
 
+  # Fonts
+  fonts.packages = with pkgs; [
+    (nerdfonts.override {
+      fonts = [
+        "FiraCode"
+        "CascadiaCode"
+        "DaddyTimeMono"
+        "Meslo"
+        "SourceCodePro"
+        "Ubuntu"
+      ];
+    })
+  ];
+
+  # Programs
+  programs = {
+    firefox.enable = true;
+    dconf.enable = true;
+    mtr.enable = true;
+    fish.enable = true;
+    wireshark.enable = true;
+    nix-index.enable = true;
+    command-not-found.enable = false;
+    gnupg.agent = {
+      enable = true;
+      enableSSHSupport = true;
+      pinentryPackage = lib.mkForce pkgs.pinentry-gnome3;
+    };
+  };
+
+  # Virtualization
+  virtualisation = {
+    libvirtd = {
+      enable = true;
+      qemu = {
+        vhostUserPackages = [pkgs.virtiofsd];
+        runAsRoot = true;
+        swtpm.enable = true;
+        ovmf = {
+          enable = true;
+          packages = [
+            (pkgs.OVMF.override {
+              secureBoot = true;
+              tpmSupport = true;
+            })
+            .fd
+          ];
+        };
+      };
+    };
+    docker.enable = true;
+  };
+
+  # User Configuration
   users.users.bibi = {
     isNormalUser = true;
     description = "bibi";
@@ -186,53 +163,7 @@ in {
     shell = pkgs.fish;
   };
 
-  security = {
-    sudo.wheelNeedsPassword = false;
-    rtkit.enable = true;
-  };
-
-  programs = {
-    firefox.enable = true;
-    dconf.enable = true;
-    mtr.enable = true;
-    gnupg.agent = {
-      enable = true;
-      enableSSHSupport = true;
-      pinentryPackage = lib.mkForce pkgs.pinentry-gnome3;
-    };
-    nix-index.enable = true;
-    command-not-found.enable = false;
-    wireshark.enable = true;
-    fish.enable = true;
-  };
-
-  nixpkgs.config.allowUnfree = true;
-
-  nix.settings = {
-    experimental-features = ["nix-command" "flakes"];
-  };
-
-  virtualisation.libvirtd = {
-    enable = true;
-    qemu = {
-      vhostUserPackages = [pkgs.virtiofsd];
-      runAsRoot = true;
-      swtpm.enable = true;
-      ovmf = {
-        enable = true;
-        packages = [
-          (pkgs.OVMF.override {
-            secureBoot = true;
-            tpmSupport = true;
-          })
-          .fd
-        ];
-      };
-    };
-  };
-
-  virtualisation.docker.enable = true;
-
+  # Home Manager Configuration
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
@@ -240,6 +171,7 @@ in {
     backupFileExtension = "hm-backup";
   };
 
+  # Media Server Configuration
   nixarr = {
     enable = true;
     vpn.enable = false;
@@ -258,5 +190,105 @@ in {
     readarr.enable = true;
   };
 
-  system.stateVersion = "24.05";
+  # System Packages
+  environment.systemPackages = with pkgs; [
+    # Development Tools
+    aichat
+    gcc
+    gh
+    git
+    (hiPrio parallel)
+
+    # Programming Languages & Tools
+    black
+    cabal-install
+    ghc
+    haskell-language-server
+    isort
+    stack
+
+    # System Tools
+    bat
+    curl
+    fd
+    fish
+    htop
+    kmod
+    pciutils
+    ripgrep
+    tmux
+    wget
+    zoxide
+
+    # Security Tools
+    burpsuite
+    exploitdb
+    ghidra-bin
+    hashcat
+    john
+    metasploit
+    nmap
+    sqlmap
+
+    # Media Tools
+    ffmpeg
+    grim
+    imagemagick
+    imv
+    mpv
+    qimgv
+    realesrgan-ncnn-vulkan
+    slurp
+    yt-dlp
+
+    # Virtualization
+    libvirt
+    qemu
+    quickemu
+    swtpm
+    (pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" ''
+      qemu-system-x86_64 \
+        -bios ${pkgs.OVMF.fd}/FV/OVMF.fd \
+        "$@"
+    '')
+
+    # Applications
+    alejandra
+    android-tools
+    anki
+    apktool
+    firefox
+    google-chrome
+    jadx
+    kitty
+    neovim
+    obsidian
+    powershell
+    veracrypt
+    yazi
+
+    # Other Utilities
+    file
+    glow
+    internal.assemblyai-cli
+    jsbeautifier
+    mako
+    moreutils
+    openvpn
+    pandoc
+    pavucontrol
+    poppler_utils
+    snowfallorg.flake
+    socat
+    stegseek
+    texliveTeTeX
+    unixtools.xxd
+    unzip
+    uv
+    vdhcoapp
+    wl-clipboard
+    wordlists
+    xclip
+    zip
+  ];
 }
