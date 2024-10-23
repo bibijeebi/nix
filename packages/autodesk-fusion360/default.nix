@@ -1,20 +1,17 @@
 {
-  lib,
-  inputs,
   fetchurl,
-  wine64, # Explicitly use wine64
-  stdenv,
-  makeDesktopItem,
-  copyDesktopItems,
   imagemagick,
+  inputs,
+  lib,
   p7zip,
+  stdenv,
+  wine,
   winetricks,
-  fuse,
-  gdk-pixbuf,
-  notify-desktop,
+, copyDesktopIcons
+, copyDesktopItems
+, makeDesktopIcon
+, makeDesktopItem
 }: let
-  mkWindowsApp = inputs.erosanix.lib.x86_64-linux.mkWindowsApp;
-
   icons = stdenv.mkDerivation {
     name = "fusion360-icons";
 
@@ -36,7 +33,7 @@
   };
 in
   mkWindowsApp rec {
-    inherit (wine64) wine; # Use wine64's wine
+    inherit wine;
 
     pname = "autodesk-fusion360";
     version = "latest";
@@ -45,6 +42,11 @@ in
       url = "https://dl.appstreaming.autodesk.com/production/installers/Fusion%20Admin%20Install.exe";
       sha256 = "sha256-hizfizCbmo9Hk1qEM26c13amdXLNcKD4QzdpQZcLnOE=";
     };
+
+    src = fetchurl {
+      url = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/main/files/setup/data/autodesk_fusion_launcher.sh";
+      sha256 = "";
+s    }
 
     webview2 = fetchurl {
       url = "https://github.com/aedancullen/webview2-evergreen-standalone-installer-archive/releases/download/109.0.1518.78/MicrosoftEdgeWebView2RuntimeInstallerX64.exe";
@@ -62,75 +64,36 @@ in
     };
 
     dontUnpack = true;
-    wineArch = "win64";
+    enableInstallNotification = true;
+    persistRegistry = true;
 
     nativeBuildInputs = [
+      p7zip
       copyDesktopItems
-      p7zip
-      winetricks
-      gdk-pixbuf
-      notify-desktop
     ];
-
-    buildInputs = [
-      wine64
-      fuse
-    ];
-
-    # Add runtime dependencies
-    runtimeInputs = [
-      wine64
-      p7zip
-      winetricks
-      gdk-pixbuf
-      fuse
-    ];
-
-    enableInstallNotification = true;
-
-    # Initialize WINEPREFIX before installation
-    winAppPreInstall = ''
-      # Ensure clean WINEPREFIX
-      rm -rf "$WINEPREFIX"
-      # Initialize 64-bit prefix
-      WINEARCH=win64 wineboot --init
-      while pgrep wineboot >/dev/null; do
-        sleep 1
-      done
-    '';
 
     winAppInstall = ''
-      # Configure Wine
-      winetricks -q atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017 fontsmooth=rgb winhttp win10
+      winetricks sandbox
+      winetricks atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017 fontsmooth=rgb winhttp win10
+      winetricks cjkfonts
+      winetricks win11
 
-      # Configure registry
-      wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "adpclientservice.exe" /t REG_SZ /d "" /f
-      wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "AdCefWebBrowser.exe" /t REG_SZ /d "builtin" /f
-      wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "msvcp140" /t REG_SZ /d "native" /f
-      wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "mfc140u" /t REG_SZ /d "native" /f
-      wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "bcp47langs" /t REG_SZ /d "" /f
+      $WINE ${src} /silent /install
+      $WINE ${webview2} /silent /install
+      $WINE ${qt6webenginecore} /silent /install
+      $WINE ${siappdll} /silent /install
 
-      # Install WebView2
-      wine ${webview2} /silent /install
-      wineserver -w
+      wine REG ADD "HKCU\Software\Wine\DllOverrides" /v "adpclientservice.exe" /t REG_SZ /d "" /f
+      wine REG ADD "HKCU\Software\Wine\DllOverrides" /v "AdCefWebBrowser.exe" /t REG_SZ /d builtin /f
+      wine REG ADD "HKCU\Software\Wine\DllOverrides" /v "msvcp140" /t REG_SZ /d native /f
+      wine REG ADD "HKCU\Software\Wine\DllOverrides" /v "mfc140u" /t REG_SZ /d native /f
+      wine reg add "HKCU\Software\Wine\DllOverrides" /v "bcp47langs" /t REG_SZ /d "" /f
 
-      # Install Fusion 360
-      wine ${src} --quiet
-      wineserver -w
-
-      # Create required directories
-      mkdir -p "$WINEPREFIX/drive_c/Program Files/Autodesk/webengine/"
-      mkdir -p "$WINEPREFIX/drive_c/Program Files/Autodesk/"
-
-      # Extract and patch Qt6WebEngineCore.dll
-      ${p7zip}/bin/7z x ${qt6webenginecore} -o"$WINEPREFIX/drive_c/Program Files/Autodesk/webengine/"
-
-      # Copy siappdll
-      cp ${siappdll} "$WINEPREFIX/drive_c/Program Files/Autodesk/"
+      winetricks vd="$MONITOR_RESOLUTION"
     '';
 
     winAppRun = ''
-      wine "C:/Program Files/Autodesk/Fusion 360/Fusion360.exe" "$ARGS"
+      wine "$WINEPREFIX/drive_c/Program Files/Autodesk/Fusion 360/Fusion360.exe" "$ARGS"
     '';
 
     # File mapping for persistence
@@ -138,9 +101,6 @@ in
       "$HOME/.config/Autodesk/Fusion360" = "drive_c/users/$USER/Application Data/Autodesk/Fusion360";
       "$HOME/.local/share/fusion360" = "drive_c/users/$USER/Documents/Fusion360";
     };
-
-    # Enable registry persistence
-    persistRegistry = true;
 
     installPhase = ''
       runHook preInstall
