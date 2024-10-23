@@ -130,6 +130,17 @@
     };
   };
 
+  wayland.windowManager.sway = {
+    enable = true;
+    config = rec {
+      modifier = "Mod4";
+      terminal = "kitty";
+      startup = [
+        {command = "firefox";}
+      ];
+    };
+  };
+
   services.cliphist.enable = true;
 
   home.stateVersion = "24.05";

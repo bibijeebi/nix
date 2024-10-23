@@ -43,21 +43,17 @@ in {
       ]);
   };
 
+  programs.sway = {
+    enable = true;
+    wrapperFeatures.gtk = true;
+  };
+
   services = {
     displayManager.sddm.wayland.enable = true;
     displayManager.sddm.enable = true;
     displayManager.autoLogin.enable = true;
     displayManager.autoLogin.user = "bibi";
     desktopManager.plasma6.enable = true;
-
-    # displayManager.defaultSession = "cinnamon";
-    # xserver = {
-    #   enable = true;
-    #   displayManager.lightdm.enable = true;
-    #   desktopManager = {
-    #     cinnamon.enable = true;
-    #   };
-    # };
 
     printing.enable = true;
     pipewire = {
@@ -79,11 +75,17 @@ in {
     };
   };
 
+  services.gnome.gnome-keyring.enable = true;
+
   hardware.pulseaudio.enable = false;
 
   environment = {
     systemPackages = with pkgs; [
       (hiPrio parallel)
+      # blender
+      # chromium
+      # super-slicer
+      # vscode
       aichat
       alejandra
       android-tools
@@ -91,19 +93,17 @@ in {
       apktool
       bat
       black
-      # blender
       burpsuite
       cabal-install
       code-cursor
-      # chromium
       curl
+      expect
       exploitdb
       fd
       ffmpeg
-      firefox
       file
+      firefox
       fish
-      expect
       gcc
       gh
       ghc
@@ -113,6 +113,7 @@ in {
       gobuster
       google-chrome
       grim
+      grim # screenshot functionality
       hashcat
       haskell-language-server
       htop
@@ -126,6 +127,7 @@ in {
       kitty
       kmod
       libvirt
+      mako # notification system developed by swaywm maintainer
       metasploit
       moreutils
       mpv
@@ -138,20 +140,19 @@ in {
       pavucontrol
       pciutils
       poppler_utils
-      firefox
       powershell
       qemu
+      qimgv
       quickemu
       realesrgan-ncnn-vulkan
       ripgrep
       slurp
+      slurp # screenshot functionality
       snowfallorg.flake
       socat
       sqlmap
       stack
-      qimgv
       stegseek
-      # super-slicer
       swtpm
       texliveTeTeX
       tmux
@@ -160,13 +161,13 @@ in {
       uv
       vdhcoapp
       veracrypt
-      # vscode
       wget
       wl-clipboard
+      wl-clipboard # wl-copy and wl-paste for copy/paste from stdin / stdout
       wordlists
+      xclip
       yazi
       yt-dlp
-      xclip
       zip
       zoxide
       (pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" ''
