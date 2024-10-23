@@ -5,107 +5,19 @@
   inputs,
   ...
 }: {
+  home.stateVersion = "24.05";
+  programs.home-manager.enable = true;
+
   programs = {
-    home-manager.enable = true;
-
-    # Enable multiple programs with a single declaration
-    bat.enable = true;
-    eza.enable = true;
-    fd.enable = true;
-    firefox.enable = true;
-    fzf.enable = true;
-    gh.enable = true;
-    gpg.enable = true;
-    htop.enable = true;
-    imv.enable = true;
-    jq.enable = true;
-    mpv.enable = true;
-    pandoc.enable = true;
-    ripgrep.enable = true;
-    taskwarrior.enable = true;
-    tmux.enable = true;
-    waybar.enable = true;
-    wofi.enable = true;
-    yazi.enable = true;
-    yt-dlp.enable = true;
-    zoxide.enable = true;
-    gallery-dl.enable = true;
-
-    direnv = {
-      enable = true;
-      nix-direnv.enable = true;
-    };
-
-    vscode = {
-      enable = false;
-      extensions = with pkgs.vscode-extensions; [
-        albymor.increment-selection
-        bbenoist.nix
-        catppuccin.catppuccin-vsc
-        catppuccin.catppuccin-vsc-icons
-        genieai.chatgpt-vscode
-        kamadorueda.alejandra
-        ms-python.python
-        ms-vscode.powershell
-        timonwong.shellcheck
-      ];
-      enableUpdateCheck = false;
-      enableExtensionUpdateCheck = false;
-      mutableExtensionsDir = true;
-      userSettings = {
-        "editor.fontSize" = 11;
-        "editor.mouseWheelZoom" = true;
-        "extensions.autoCheckUpdates" = false;
-        "explorer.confirmDelete" = false;
-        "files.autoSave" = "afterDelay";
-        "files.saveConflictResolution" = "overwriteFileOnDisk";
-        "files.simpleDialog.enable" = true;
-        "files.trimFinalNewlines" = true;
-        "files.trimTrailingWhitespace" = true;
-        "genieai" = {
-          "enableConversationHistory" = true;
-          "openai" = {
-            "maxTokens" = 8196;
-            "temperature" = 0.3;
-            "apiBaseUrl" = "https://openrouter.ai/api";
-            "model" = "anthropic/claude-3.5-sonnet:beta";
-          };
-        };
-        "git.confirmSync" = false;
-        "security.workspace.trust.enabled" = false;
-        "shellcheck.exclude" = ["SC1008"];
-        "update.mode" = "none";
-        "window" = {
-          "dialogStyle" = "custom";
-          "titleBarStyle" = "custom";
-        };
-        "workbench" = {
-          "colorTheme" = "Catppuccin Mocha";
-          "commandPalette.preserveInput" = true;
-          "startupEditor" = "none";
-        };
-      };
-    };
-
-    kitty = {
-      enable = true;
-      settings = {
-        confirm_os_window_close = 0;
-        enable_audio_bell = false;
-        mouse_hide_wait = "-1.0";
-      };
-      theme = "Catppuccin-Mocha";
-      font = {
-        package = pkgs.nerdfonts;
-        name = "CaskaydiaCove Nerd Font";
-        size = 11;
-      };
-    };
-
     git = {
       enable = true;
       userName = "bibijeebi";
       userEmail = "bennyforeman1@gmail.com";
+    };
+
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
     };
 
     fish = {
@@ -121,15 +33,63 @@
       vimAlias = true;
       vimdiffAlias = true;
       plugins = with pkgs.vimPlugins; [
-        nvim-lspconfig
-        nvim-treesitter.withAllGrammars
-        plenary-nvim
-        gruvbox-material
-        mini-nvim
+        nvim-lspconfig # Language server protocol
+        nvim-treesitter.withAllGrammars # Syntax highlighting
+        plenary-nvim # Lua functions library
+        gruvbox-material # Color scheme
+        mini-nvim # Collection of minimal plugins
       ];
     };
+
+    # Terminal Emulator
+    kitty = {
+      enable = true;
+      theme = "Catppuccin-Mocha";
+      font = {
+        package = pkgs.nerdfonts;
+        name = "CaskaydiaCove Nerd Font";
+        size = 11;
+      };
+      settings = {
+        confirm_os_window_close = 0;
+        enable_audio_bell = false;
+        mouse_hide_wait = "-1.0";
+      };
+    };
+
+    # File Navigation and Search
+    fd.enable = true; # Alternative to find
+    fzf.enable = true; # Fuzzy finder
+    ripgrep.enable = true; # Fast grep
+    zoxide.enable = true; # Smarter cd
+    yazi.enable = true; # Terminal file manager
+
+    # File Viewing and Processing
+    bat.enable = true; # Better cat
+    eza.enable = true; # Better ls
+    jq.enable = true; # JSON processor
+    pandoc.enable = true; # Document converter
+
+    # System Monitoring
+    htop.enable = true; # Process viewer
+
+    # Development Tools
+    gh.enable = true; # GitHub CLI
+    gpg.enable = true; # Encryption
+    tmux.enable = true; # Terminal multiplexer
+
+    # Media Tools
+    gallery-dl.enable = true; # Image downloader
+    imv.enable = true; # Image viewer
+    mpv.enable = true; # Media player
+    yt-dlp.enable = true; # Video downloader
+
+    # Productivity
+    firefox.enable = true; # Web browser
+    taskwarrior.enable = true; # Task management
   };
 
+  # Window Manager
   wayland.windowManager.sway = {
     enable = true;
     config = rec {
@@ -141,7 +101,6 @@
     };
   };
 
-  services.cliphist.enable = true;
-
-  home.stateVersion = "24.05";
+  # System Services
+  services.cliphist.enable = true; # Clipboard manager
 }
