@@ -7,10 +7,10 @@
   stdenv,
   wine,
   winetricks,
-, copyDesktopIcons
-, copyDesktopItems
-, makeDesktopIcon
-, makeDesktopItem
+  copyDesktopIcons,
+  copyDesktopItems,
+  makeDesktopIcon,
+  makeDesktopItem,
 }: let
   icons = stdenv.mkDerivation {
     name = "fusion360-icons";
@@ -43,10 +43,10 @@ in
       sha256 = "sha256-hizfizCbmo9Hk1qEM26c13amdXLNcKD4QzdpQZcLnOE=";
     };
 
-    src = fetchurl {
+    launcher = fetchurl {
       url = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/main/files/setup/data/autodesk_fusion_launcher.sh";
       sha256 = "";
-s    }
+    }
 
     webview2 = fetchurl {
       url = "https://github.com/aedancullen/webview2-evergreen-standalone-installer-archive/releases/download/109.0.1518.78/MicrosoftEdgeWebView2RuntimeInstallerX64.exe";
