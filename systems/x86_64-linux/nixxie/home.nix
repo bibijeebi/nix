@@ -6,6 +6,21 @@
   home.stateVersion = "24.05";
   programs.home-manager.enable = true;
 
+  home.sessionVariables = {
+    EDITOR = "nvim";
+    VISUAL = "cursor";
+    BROWSER = "google-chrome";
+    TERMINAL = "kitty";
+    PAGER = "less";
+
+    LESSHISTFILE = "-"; # Disable less history file
+    FZF_DEFAULT_COMMAND = "fd --type f"; # FZF default search command
+    MANPAGER = "sh -c 'col -bx | bat -l man -p'"; # Better man pages
+
+    MOZ_USE_XINPUT2 = "1"; # Better Firefox touch/scrolling
+    QT_QPA_PLATFORMTHEME = "gtk2"; # Consistent QT/GTK theming
+  };
+
   programs = {
     git = {
       enable = true;
@@ -122,6 +137,13 @@
       package = pkgs.gnome.adwaita-icon-theme;
     };
   };
+
+  qt = {
+    enable = true;
+    platformTheme = "gtk";
+  };
+
+  fonts.fontconfig.enable = true;
 
   # Window Manager
   wayland.windowManager.sway = {
