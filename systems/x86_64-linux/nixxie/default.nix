@@ -341,5 +341,8 @@ in {
     wineWowPackages.stagingFull
     bottles
     winetricks
+
+    xfce.thunar
+    xfce.tumbler
   ];
 }
