@@ -1,6 +1,4 @@
-{
-  ...
-}: _final: prev: {
+_final: prev: {
   python3Packages = prev.python3Packages.override {
     overrides = _pfinal: pprev: {
       openai = pprev.openai.overrideAttrs (_oldAttrs: {

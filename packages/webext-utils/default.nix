@@ -8,9 +8,8 @@
   jq,
   unzip,
   zip,
-  crx3-utils,
+  nodejs,
 }: let
-  # Function to generate Chrome-compatible extension ID from a hash
   makeExtensionId = hash: let
     base16ToBase16Limited = c:
       if c == "0"
@@ -49,27 +48,18 @@
   in
     lib.concatStrings (map base16ToBase16Limited (lib.stringToCharacters (builtins.substring 0 32 hash)));
 
-  # Base builder for Chrome extensions
   buildChromeExtension = a @ {
     name ? "",
+    src,
     manifestOverrides ? {},
-    chromeExtId ? null, # Can be provided for known extensions
+    chromeExtId ? null,
     chromeExtPublisher ? null,
     chromeExtName ? null,
-    configurePhase ? ''
-      runHook preConfigure
-      runHook postConfigure
-    '',
-    buildPhase ? ''
-      runHook preBuild
-      runHook postBuild
-    '',
-    dontStrip ? true,
     nativeBuildInputs ? [],
     passthru ? {},
     ...
   }:
-    stdenv.mkDerivation (a
+    stdenv.mkDerivation (removeAttrs a ["manifestOverrides" "chromeExtId" "chromeExtPublisher" "chromeExtName"]
       // {
         name = "chrome-extension-${name}";
 
@@ -83,24 +73,17 @@
               else makeExtensionId (builtins.hashString "sha256" "${name}-${a.version}");
           };
 
-        inherit configurePhase buildPhase dontStrip;
-
-        nativeBuildInputs = [jq unzip zip crx3-utils] ++ nativeBuildInputs;
+        nativeBuildInputs = [jq unzip zip nodejs] ++ nativeBuildInputs;
 
         patchPhase = ''
           runHook prePatch
 
-          # Validate and patch manifest.json
           if [ -f "manifest.json" ]; then
             manifest=$(cat manifest.json)
-
-            # Apply any overrides
             ${lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: ''
               manifest=$(echo "$manifest" | jq '. + {"${k}": ${builtins.toJSON v}}')
             '')
             manifestOverrides)}
-
-            # Ensure the manifest is valid
             echo "$manifest" | jq 'empty'
             echo "$manifest" > manifest.json
           else
@@ -113,34 +96,23 @@
 
         buildPhase = ''
           runHook preBuild
-
-          # Package the extension
           zip -r extension.zip ./*
-
-          # Convert to CRX3 format
-          crx3-utils pack --zip extension.zip --output extension.crx
-
           runHook postBuild
         '';
 
         installPhase = ''
           runHook preInstall
 
-          # Create extension directory
           mkdir -p $out/share/chrome-extensions
-
-          # Install the extension files
           cp -r . $out/share/chrome-extensions/unpacked
           cp extension.zip $out/share/chrome-extensions/extension.zip
-          cp extension.crx $out/share/chrome-extensions/extension.crx
 
-          # Create update manifest
           cat > $out/share/chrome-extensions/update.xml << EOF
           <?xml version='1.0' encoding='UTF-8'?>
           <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
             <app appid='${passthru.extensionId}'>
               <updatecheck
-                codebase="file://$out/share/chrome-extensions/extension.crx"
+                codebase="file://$out/share/chrome-extensions/extension.zip"
                 version="${a.version}"
                 prodversionmin="${lib.versions.majorMinor a.version}"
               />
@@ -152,7 +124,6 @@
         '';
       });
 
-  # Fetch extension CRX from Chrome Web Store
   fetchCrxFromChromeStore = {
     id,
     version,
@@ -166,7 +137,6 @@
       name = "chrome-extension-${id}.crx";
     };
 
-  # Build extension from Chrome Web Store reference
   buildChromeStoreExtension = a @ {
     name ? "",
     src ? null,
@@ -189,7 +159,6 @@
         }
       );
 
-  # Helper functions for store extensions
   storeRefAttrList = [
     "id"
     "version"
@@ -210,41 +179,18 @@
   extensionsFromChromeStore = storeRefList:
     builtins.map extensionFromChromeStore storeRefList;
 
-  # Helper to generate extension metadata for Chrome
   toExtensionJsonEntry = ext: {
     id = ext.extensionId;
     version = ext.version;
-    location = ext.outPath + "/share/chrome-extensions/extension.crx";
+    location = ext.outPath + "/share/chrome-extensions/extension.zip";
     updateUrl = "file://${ext.outPath}/share/chrome-extensions/update.xml";
   };
 
   toExtensionJson = extensions:
     builtins.toJSON (map toExtensionJsonEntry extensions);
 
-  # Helper to convert Chrome Store extensions to Nix expressions
-  chromeExts2nix = {
-  }:
-    writeShellScriptBin "chrome-exts-2-nix" ''
-      #!${stdenv.shell}
-
-      # TODO: Implement scraping of Chrome Web Store
-      # This would need to:
-      # 1. Fetch extension metadata from store
-      # 2. Generate Nix expressions
-      # 3. Save to outputFile
-      echo "Not implemented yet"
-      exit 1
-    '';
-
-  # Environment builder for Chrome with extensions
   chromeEnv = import ./chromeEnv.nix {
-    inherit
-      lib
-      buildEnv
-      writeShellScriptBin
-      extensionsFromChromeStore
-      jq
-      ;
+    inherit lib buildEnv writeShellScriptBin extensionsFromChromeStore jq;
   };
 in {
   inherit
@@ -253,8 +199,6 @@ in {
     fetchCrxFromChromeStore
     extensionFromChromeStore
     extensionsFromChromeStore
-    chromeExts2nix
-    chromeEnv
     toExtensionJsonEntry
     toExtensionJson
     ;
