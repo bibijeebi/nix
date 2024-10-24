@@ -1,8 +1,8 @@
 {
   lib,
   mkWindowsApp,
-  wine64, # Explicitly use wine64
-  wine, # Need this for winetricks
+  wine64,
+  wine,
   fetchurl,
   makeDesktopItem,
   makeDesktopIcon,
@@ -12,6 +12,8 @@
   cabextract,
   gdk-pixbuf,
   libnotify,
+  writeShellScript,
+  makeWrapper,
 }:
 mkWindowsApp rec {
   pname = "fusion360";
@@ -46,6 +48,34 @@ mkWindowsApp rec {
   wineArch = "win64";
 
   dontUnpack = true;
+
+  # Create launcher script
+  launcher = writeShellScript "fusion360-launcher" ''
+    export WINEPREFIX="$HOME/.local/share/fusion360/prefix"
+    export WINEARCH=win64
+    exec ${wine64}/bin/wine64 "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/"*.exe "$@"
+  '';
+
+  installPhase = ''
+    runHook preInstall
+
+    # Create directory structure
+    mkdir -p $out/bin
+    mkdir -p $out/share/applications
+
+    # Install launcher script
+    install -Dm755 ${launcher} $out/bin/.launcher
+    makeWrapper $out/bin/.launcher $out/bin/${pname} \
+      --prefix PATH : ${lib.makeBinPath [wine64]} \
+      --set WINEPREFIX "$HOME/.local/share/fusion360/prefix" \
+      --set WINEARCH "win64"
+
+    # Copy desktop files and icons
+    copyDesktopItems
+    copyDesktopIcons
+
+    runHook postInstall
+  '';
 
   # Initialize wine prefix before installing
   preWineInit = ''
@@ -101,9 +131,8 @@ mkWindowsApp rec {
     "$HOME/.config/fusion360/local-config" = "drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options";
   };
 
-  # Launch command
   winAppRun = ''
-    ${wine64}/bin/wine64 "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/*.exe" "$ARGS"
+    exec wine64 "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/"*.exe "$ARGS"
   '';
 
   desktopItems = [
