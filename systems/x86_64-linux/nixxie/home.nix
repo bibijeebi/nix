@@ -117,9 +117,6 @@
     };
   };
 
-  xdg.mime.defaultApplications = {
-  };
-
   xdg = {
     mime.enable = true;
     mimeApps = {
