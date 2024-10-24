@@ -117,6 +117,20 @@
     };
   };
 
+  xdg.mime.defaultApplications = {
+    "application/pdf" = "google-chrome.desktop";
+    "image/png" = "qimgv.desktop";
+    "image/jpeg" = "qimgv.desktop";
+    "text/plain" = "code-cursor.desktop";
+    "text/html" = "google-chrome.desktop";
+    "x-scheme-handler/http" = "google-chrome.desktop";
+    "x-scheme-handler/https" = "google-chrome.desktop";
+    "x-scheme-handler/about" = "google-chrome.desktop";
+    "x-scheme-handler/unknown" = "google-chrome.desktop";
+    "video/mp4" = "mpv.desktop";
+    "video/mkv" = "mpv.desktop";
+  };
+
   # System Services
   services.cliphist.enable = true; # Clipboard manager
 }

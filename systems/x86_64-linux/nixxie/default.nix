@@ -54,6 +54,23 @@ in {
   programs.sway = {
     enable = true;
     wrapperFeatures.gtk = true;
+    xwayland.enable = true;
+  };
+
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true;
+    nvidiaPatches = true;
+    package = pkgs.hyprland;
+  };
+
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-kde
+      xdg-desktop-portal-hyprland
+    ];
+    config.common.default = "*";
   };
 
   # Display and Desktop Services
@@ -69,7 +86,10 @@ in {
         user = "bibi";
       };
     };
-    desktopManager.plasma6.enable = true;
+    desktopManager.plasma5 = {
+      enable = true;
+      xwayland.enable = true;
+    };
     gnome.gnome-keyring.enable = true;
 
     # Audio
@@ -219,7 +239,6 @@ in {
     aichat
     code-cursor
     gcc
-    gh
     (hiPrio parallel)
 
     # Programming Languages & Tools
@@ -274,7 +293,6 @@ in {
     obsidian
     powershell
     veracrypt
-    yazi
 
     # Other Utilities
     file
