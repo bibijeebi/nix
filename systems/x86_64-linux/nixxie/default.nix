@@ -86,7 +86,7 @@ in {
   # Display and Desktop Services
   services = {
     udisks2.enable = true;
-    gvfs.enable = true;
+
     displayManager = {
       sddm = {
         enable = true;
@@ -121,6 +121,9 @@ in {
       enable = true;
       openFirewall = true;
     };
+
+    tumbler.enable = true;
+    gvfs.enable = true;
   };
 
   # Audio Configuration
@@ -185,6 +188,14 @@ in {
       enableSSHSupport = true;
       pinentryPackage = lib.mkForce pkgs.pinentry-gnome3;
     };
+    thunar = {
+      enable = true;
+      plugins = with pkgs.xfce; [
+        thunar-archive-plugin
+        thunar-volman
+      ];
+    };
+    xfconf.enable = true;
   };
 
   # Virtualization
@@ -341,8 +352,5 @@ in {
     wineWowPackages.stagingFull
     bottles
     winetricks
-
-    xfce.thunar
-    xfce.tumbler
   ];
 }
