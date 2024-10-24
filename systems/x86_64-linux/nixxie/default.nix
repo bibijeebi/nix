@@ -86,10 +86,7 @@ in {
         user = "bibi";
       };
     };
-    desktopManager.plasma6 = {
-      enable = true;
-      xwayland.enable = true;
-    };
+    desktopManager.plasma6.enable = true;
     gnome.gnome-keyring.enable = true;
 
     # Audio
