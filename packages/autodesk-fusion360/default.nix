@@ -128,9 +128,13 @@ mkWindowsApp rec {
     })
   ];
 
+  # Convert the ICO file to PNG for the desktop icon
   desktopIcon = makeDesktopIcon {
     name = pname;
-    src = ./files/builds/stable-branch/bin/Fusion360.ico;
+    src = builtins.fetchurl {
+      url = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/refs/heads/main/files/builds/stable-branch/bin/Fusion360.ico";
+      sha256 = "sha256:0ljgii5pf28y171dab23dghj8hslfimdigvvrwhnkj0rwkpz09is";
+    };
   };
 
   dontUnpack = true;
