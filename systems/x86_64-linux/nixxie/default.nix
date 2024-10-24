@@ -317,5 +317,7 @@ in {
     wine64
     wine
     winetricks
+
+    gvfs
   ];
 }
