@@ -1,5 +1,6 @@
 #!/usr/bin/env nix
-#!nix shell nixpkgs#jsbeautifier nixpkgs#jq nixpkgs#curl --command bash
+#!nix shell nixpkgs#jsbeautifier nixpkgs#jq nixpkgs#curl
+#!nix --command bash
 
 set -euo pipefail
 
@@ -93,7 +94,7 @@ is_interesting_js() {
 
     # Prioritize common extension source files
     for priority_file in "${PRIORITY_FILES[@]}"; do
-        if [[ $filename == $priority_file ]]; then
+        if [[ $filename == "$priority_file" ]]; then
             return 0
         fi
     done
@@ -181,6 +182,8 @@ EOF
     local retry_count=0
     local response
 
+    echo "--- BEGIN ANALYSIS ---"
+
     while [ $retry_count -lt $max_retries ]; do
         response=$(curl -s "https://api.anthropic.com/v1/messages" \
             -H "x-api-key: $api_key" \
@@ -217,8 +220,7 @@ EOF
                     }'
             )" 2>/dev/null)
 
-        if [ $? -eq 0 ] && [ -n "$response" ]; then
-            echo "$response" | jq -r '.content[0].text'
+        if [ -n "$response" ] && echo "$response" | jq -r '.content[0].text'; then
             break
         else
             retry_count=$((retry_count + 1))

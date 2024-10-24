@@ -1,6 +1,7 @@
 #!/usr/bin/env nix
 #!nix shell -I nixpkgs=github:NixOS/nixpkgs/nixos-unstable
-#!nix nixpkgs#yt-dlp nixpkgs#curl nixpkgs#jq nixpkgs#coreutils --command bash
+#!nix nixpkgs#yt-dlp nixpkgs#curl nixpkgs#jq nixpkgs#coreutils
+#!nix --command bash
 
 set -e
 
