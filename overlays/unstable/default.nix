@@ -1,5 +1,5 @@
 {channels, ...}: _final: prev: {
-  inherit (channels.unstable) aichat blender code-cursor uv;
+  inherit (channels.unstable) aichat bottles blender code-cursor uv;
 
   fishPlugins =
     prev.fishPlugins
