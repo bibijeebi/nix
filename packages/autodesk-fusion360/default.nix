@@ -1,7 +1,7 @@
 {
   lib,
   mkWindowsApp,
-  wine,
+  wine64,
   fetchurl,
   makeDesktopItem,
   makeDesktopIcon,
@@ -9,6 +9,9 @@
   copyDesktopIcons,
   winetricks,
   cabextract,
+  fuse,
+  gdk-pixbuf,
+  libnotify,
 }:
 mkWindowsApp rec {
   pname = "fusion360";
@@ -32,7 +35,14 @@ mkWindowsApp rec {
     cabextract
   ];
 
-  inherit wine;
+  buildInputs = [
+    fuse
+    gdk-pixbuf
+    libnotify
+  ];
+
+  # Use wine64 explicitly
+  wine = wine64;
   wineArch = "win64";
 
   # DLL overrides in winetricks format
@@ -40,31 +50,38 @@ mkWindowsApp rec {
 
   # Based on the required packages from the install script
   winAppInstall = ''
+    # Make sure we're in a clean state
+    rm -rf $WINEPREFIX
+
+    # Initialize 64-bit prefix explicitly
+    WINEARCH=win64 wineboot --init
+
     # Setup winetricks requirements
-    winetricks -q atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017
-    winetricks -q fontsmooth=rgb winhttp win10
+    WINEARCH=win64 winetricks -q atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017
+    WINEARCH=win64 winetricks -q fontsmooth=rgb winhttp win10
 
     # Run cjkfonts again as sometimes it fails first time
-    winetricks -q cjkfonts
+    WINEARCH=win64 winetricks -q cjkfonts
 
     # Ensure Windows 10 mode is set
-    winetricks -q win10
-
-    # Copy installers to wine prefix
-    cp ${src} $WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe
-    cp ${webview2Installer} $WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe
-
-    # Install WebView2
-    wine $WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe /install
+    WINEARCH=win64 winetricks -q win10
 
     # Create required directories
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/Downloads"
     mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Microsoft/Internet Explorer/Quick Launch/User Pinned/"
     mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options"
     mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options"
     mkdir -p "$WINEPREFIX/drive_c/users/$USER/Application Data/Autodesk/Neutron Platform/Options"
 
+    # Copy installers to wine prefix
+    cp ${src} "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe"
+    cp ${webview2Installer} "$WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe"
+
+    # Install WebView2
+    WINEARCH=win64 wine "$WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe" /install
+
     # Install Fusion 360
-    wine $WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe --quiet
+    WINEARCH=win64 wine "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe" --quiet
   '';
 
   # Enable Vulkan/DXVK support as per the install script
@@ -78,9 +95,8 @@ mkWindowsApp rec {
     "$HOME/.config/fusion360/local-config" = "drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options";
   };
 
-  # Run Fusion 360
   winAppRun = ''
-    wine "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/*.exe" "$ARGS"
+    WINEARCH=win64 wine "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/*.exe" "$ARGS"
   '';
 
   # Convert the ICO file to PNG for the desktop icon
@@ -111,8 +127,6 @@ mkWindowsApp rec {
     runHook preInstall
 
     mkdir -p $out/bin
-    # The launcher script will be installed at $out/bin/.launcher by mkWindowsApp
-    # We need to create a symlink to it with our desired name
     ln -s $out/bin/.launcher $out/bin/${pname}
 
     runHook postInstall
