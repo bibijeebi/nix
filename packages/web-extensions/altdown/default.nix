@@ -1,8 +1,8 @@
 {
   lib,
-  buildChromeExtension,
+  internal,
 }:
-buildChromeExtension {
+internal.webext-utils.buildChromeExtension {
   pname = "altdown";
   version = "1.0.0";
   src = ./.;
