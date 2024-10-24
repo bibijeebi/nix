@@ -1,5 +1,5 @@
 #!/usr/bin/env nix
-#!nix shell nixpkgs#jsbeautifier nixpkgs#jq --command bash
+#!nix shell nixpkgs#jsbeautifier nixpkgs#jq nixpkgs#curl --command bash
 
 set -euo pipefail
 
@@ -14,87 +14,210 @@ find_extension_path() {
         exit 1
     fi
 
-    # Get the latest version directory
     local latest_version
     latest_version=$(find "$ext_path" -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sort -V | tail -n1)
     echo "$ext_path/$latest_version"
 }
 
-# Find JS files mentioned in another JS file
-find_js_dependencies() {
+# Check if a JS file is likely to contain core functionality
+is_core_functionality() {
     local file="$1"
-    local base_dir
-    base_dir=$(dirname "$file")
+    local filename
+    local dirpath
+    filename=$(basename "$file")
+    dirpath=$(dirname "$file")
 
-    # Use grep to find potential JS dependencies
-    {
-        # Look for import statements
-        grep -o "import.*from '[^']*\.js'" "$file" 2>/dev/null | sed "s/.*from '\([^']*\)'.*/\1/" || true
-        grep -o 'import.*from "[^"]*\.js"' "$file" 2>/dev/null | sed 's/.*from "\([^"]*\)".*/\1/' || true
+    # Skip obvious library files
+    if [[ $filename == jquery* ]] ||
+        [[ $filename == angular* ]] ||
+        [[ $filename == react* ]] ||
+        [[ $filename == vue* ]] ||
+        [[ $filename == lodash* ]] ||
+        [[ $filename == polyfill* ]]; then
+        return 1
+    fi
 
-        # Look for require statements
-        grep -o "require('[^']*\.js')" "$file" 2>/dev/null | sed "s/require('\([^']*\)').*/\1/" || true
-        grep -o 'require("[^"]*\.js")' "$file" 2>/dev/null | sed 's/require("\([^"]*\)".*/\1/' || true
+    # Prioritize key extension components
+    if [[ $filename == background.js ]] ||
+        [[ $filename == content.js ]] ||
+        [[ $filename == index.js ]] ||
+        [[ $filename == popup.js ]] ||
+        [[ $filename == options.js ]] ||
+        [[ $filename == main.js ]] ||
+        [[ $dirpath == */js/* ]] ||
+        [[ $dirpath == */src/* ]] ||
+        [[ $dirpath == */background/* ]] ||
+        [[ $dirpath == */content/* ]]; then
+        return 0
+    fi
 
-        # Look for loadScript calls
-        grep -o "loadScript('[^']*\.js')" "$file" 2>/dev/null | sed "s/loadScript('\([^']*\)').*/\1/" || true
-        grep -o 'loadScript("[^"]*\.js")' "$file" 2>/dev/null | sed 's/loadScript("\([^"]*\)".*/\1/' || true
+    # Check for potentially obfuscated code
+    if grep -q -E '(eval\(|Function\(|base64|fromCharCode|unescape\()' "$file"; then
+        return 0
+    fi
 
-        # Look for src attributes
-        grep -o "src='[^']*\.js'" "$file" 2>/dev/null | sed "s/src='\([^']*\)'.*/\1/" || true
-        grep -o 'src="[^"]*\.js"' "$file" 2>/dev/null | sed 's/src="\([^"]*\)".*/\1/' || true
-    } | while read -r dep; do
-        # Handle relative paths
-        if [[ $dep == ./* ]] || [[ $dep == ../* ]]; then
-            (cd "$base_dir" && realpath "$dep")
-        else
-            # Try to find the file relative to the current directory
-            local possible_path="$base_dir/$dep"
-            if [ -f "$possible_path" ]; then
-                realpath "$possible_path"
-            fi
-        fi
-    done
+    # Include files with suspicious patterns
+    if grep -q -E '([a-zA-Z0-9]{30,}|[_$]{2,}|\\x[0-9a-f]{2})' "$file"; then
+        return 0
+    fi
+
+    return 1
 }
 
-# Get all JS files from manifest
+# Format the output with highlighting
+format_analysis() {
+    local analysis="$1"
+
+    # Extract and highlight key functionality
+    echo -e "\033[1;36m=== CORE FUNCTIONALITY ===\033[0m"
+    echo "$analysis" | awk '/^## Core Features/,/^## Implementation Details/' | grep -v "^## Implementation Details"
+    echo
+
+    # Output deobfuscated code sections
+    echo -e "\033[1;32m=== DEOBFUSCATED CODE ===\033[0m"
+    echo "$analysis" | awk '/^## Deobfuscated Sections/,/^## Dependencies/' | grep -v "^## Dependencies"
+    echo
+
+    # Output full analysis
+    echo -e "\033[1;34m=== FULL ANALYSIS ===\033[0m"
+    echo "$analysis"
+}
+
+# Call Anthropic API to analyze the extension
+analyze_extension() {
+    local content
+    content=$(cat)
+    local api_key="$ANTHROPIC_API_KEY"
+
+    if [ -z "$api_key" ]; then
+        echo "Error: ANTHROPIC_API_KEY environment variable not set" >&2
+        exit 1
+    fi
+
+    local prompt='As a Chrome extension reverse engineer, analyze this extension code focusing on understanding its functionality and implementation details. Pay special attention to obfuscated code and try to explain its purpose.
+
+Here is the extension code:
+
+<extension_code>
+'"$content"'
+</extension_code>
+
+# 1. OVERVIEW (50 words)
+Core purpose and key technical components.
+
+# 2. FUNCTIONALITY ANALYSIS
+
+## Core Features
+For each feature:
+- Purpose
+- Implementation location [file:line]
+- How it works
+- API endpoints used (if any)
+- Notable implementation details
+
+## Implementation Details
+For each component:
+- Component purpose
+- Key functions and their roles
+- Data flow
+- Interesting techniques used
+- Browser APIs leveraged
+
+## Deobfuscated Sections
+For each obfuscated section:
+- Location: [file:line]
+- Original code snippet
+- Deobfuscated version
+- Explanation of functionality
+- Implementation notes
+Maximum 5 sections, focusing on most interesting parts
+
+## Dependencies
+- Required permissions
+- External services used
+- Notable libraries
+Maximum 3 bullets
+
+# 3. IMPLEMENTATION GUIDE
+
+## Key Components to Reimplement
+For each component:
+- Functionality description
+- Required permissions
+- Implementation approach
+- Code example
+- Testing considerations
+
+## Integration Points
+- Content script injection
+- Background worker setup
+- Message passing
+- Storage usage
+Maximum 3 bullets per section
+
+Focus on novel or interesting functionality that could be reused in other extensions.
+Include specific code examples for the most interesting features.'
+
+    # Create a temporary file for the JSON payload
+    local tmp_json
+    tmp_json=$(mktemp)
+    trap 'rm -f "$tmp_json"' EXIT
+
+    # Write the JSON payload to the temporary file
+    cat >"$tmp_json" <<EOF
+{
+    "model": "claude-3-5-sonnet-20241022",
+    "max_tokens": 4000,
+    "temperature": 0,
+    "messages": [
+        {
+            "role": "user",
+            "content": $(printf '%s' "$prompt" | jq -R -s '.')
+        }
+    ]
+}
+EOF
+
+    # Make the API call
+    local response
+    response=$(curl -s -X POST "https://api.anthropic.com/v1/messages" \
+        -H "x-api-key: $api_key" \
+        -H "anthropic-version: 2023-06-01" \
+        -H "content-type: application/json" \
+        -d @"$tmp_json")
+
+    # Extract and format the content
+    local analysis
+    analysis=$(echo "$response" | jq -r '.content[0].text')
+    format_analysis "$analysis"
+
+    # Print the original prompt
+    echo -e "\n\033[1;35m=== ORIGINAL PROMPT ===\033[0m"
+    echo "$prompt"
+}
+
+# Get relevant JS files from manifest
 get_manifest_js_files() {
     local manifest="$1"
     local base_dir
     base_dir=$(dirname "$manifest")
 
     {
-        # Background scripts
+        # Background scripts/worker
         jq -r '.background.scripts[]? // empty' "$manifest" 2>/dev/null || true
+        jq -r '.background.service_worker? // empty' "$manifest" 2>/dev/null || true
 
         # Content scripts
         jq -r '.content_scripts[]?.js[]? // empty' "$manifest" 2>/dev/null || true
-
-        # Web accessible resources (handle both v2 and v3)
-        jq -r '
-            if (.web_accessible_resources | type) == "array" then
-                .web_accessible_resources[]? | select(endswith(".js"))
-            elif (.web_accessible_resources | type) == "object" then
-                .web_accessible_resources[]?.resources[]? | select(endswith(".js"))
-            else
-                empty
-            end
-        ' "$manifest" 2>/dev/null || true
-    } | while read -r js_file; do
-        realpath "$base_dir/$js_file"
+    } | while read -r file; do
+        if [[ $file == *.js ]]; then
+            local full_path
+            full_path="$(realpath "$base_dir/$file")"
+            if is_core_functionality "$full_path"; then
+                echo "$full_path"
+            fi
+        fi
     done
-}
-
-# Process a JS file and output it in the required format
-process_js_file() {
-    local file="$1"
-    local rel_path
-    rel_path=${file#"$HOME/"}
-
-    echo "--- BEGIN $rel_path ---"
-    js-beautify -l2 "$file" 2>/dev/null || cat "$file"
-    echo "--- END $rel_path ---"
-    echo
 }
 
 # Main script
@@ -109,53 +232,36 @@ main() {
     ext_path=$(find_extension_path "$ext_id")
     local manifest="$ext_path/manifest.json"
 
-    # Process manifest
-    echo "--- BEGIN ${manifest#"$HOME/"} ---"
-    jq '.' "$manifest"
-    echo "--- END ${manifest#"$HOME/"} ---"
-    echo
+    # Collect and analyze the extension content
+    {
+        # Process manifest
+        echo "--- BEGIN manifest.json ---"
+        jq '.' "$manifest"
+        echo "--- END manifest.json ---"
+        echo
 
-    # Create temporary files
-    local files_to_process
-    local new_files
-    files_to_process=$(mktemp)
-    new_files=$(mktemp)
-    trap 'rm -f "$files_to_process" "$new_files"' EXIT
-
-    # Get initial JS files from manifest
-    get_manifest_js_files "$manifest" | sort -u >"$files_to_process"
-
-    # Process JS files and their dependencies
-    local processed_files=""
-    while true; do
-        # Clear the new files list
-        : >"$new_files"
-
-        # Process current batch of files
+        # Process JS files specified in manifest
         while IFS= read -r js_file; do
-            # Skip if already processed
-            if [[ $processed_files == *"$js_file"* ]]; then
-                continue
-            fi
-
-            # Process the file
             if [ -f "$js_file" ]; then
-                process_js_file "$js_file"
-                processed_files="$processed_files:$js_file"
-
-                # Find dependencies and add them to the new files list
-                find_js_dependencies "$js_file" | sort -u >>"$new_files"
+                local rel_path="${js_file#"$HOME/"}"
+                echo "--- BEGIN $rel_path ---"
+                js-beautify -l2 "$js_file" 2>/dev/null || cat "$js_file"
+                echo "--- END $rel_path ---"
+                echo
             fi
-        done <"$files_to_process"
+        done < <(get_manifest_js_files "$manifest")
 
-        # If no new files were found, we're done
-        if [ ! -s "$new_files" ]; then
-            break
-        fi
-
-        # Update files to process for next iteration
-        cp "$new_files" "$files_to_process"
-    done
+        # Look for other interesting JS files
+        while IFS= read -r file; do
+            if is_core_functionality "$file"; then
+                local rel_path="${file#"$HOME/"}"
+                echo "--- BEGIN $rel_path ---"
+                js-beautify -l2 "$file" 2>/dev/null || cat "$file"
+                echo "--- END $rel_path ---"
+                echo
+            fi
+        done < <(find "$ext_path" -type f -name "*.js")
+    } | analyze_extension
 }
 
 main "$@"
