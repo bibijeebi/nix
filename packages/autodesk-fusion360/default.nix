@@ -45,56 +45,51 @@ mkWindowsApp rec {
   wine = wine64;
   wineArch = "win64";
 
-  # DLL overrides in winetricks format
-  dllOverrides = "adpclientservice=disabled;AdCefWebBrowser.exe=builtin;msvcp140=native;mfc140u=native;bcp47langs=disabled";
-
-  # Based on the required packages from the install script
-  winAppInstall = ''
-    # Initialize fresh 64-bit prefix
+  # Initialize wine prefix before installing
+  preWineInit = ''
+    # Ensure clean prefix
     rm -rf "$WINEPREFIX"
     mkdir -p "$WINEPREFIX"
+  '';
 
-    # Ensure we're using 64-bit wine
-    export WINEARCH=win64
-    export WINEPREFIX="$WINEPREFIX"
-
-    # Initialize wine prefix
+  # Main installation steps
+  winAppInstall = ''
+    # Initialize wine prefix with required Windows version
     ${wine64}/bin/wineboot --init
 
-    # Wait for wineboot to finish
+    # Wait for wineboot
     while pgrep wineboot >/dev/null; do
-      echo "Waiting for wineboot to finish..."
+      echo "Waiting for wineboot..."
       sleep 1
     done
 
-    # Create all required directories
+    # Create required directories
     mkdir -p "$WINEPREFIX/drive_c/users/$USER/Downloads"
-    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Microsoft/Internet Explorer/Quick Launch/User Pinned/"
-    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options"
     mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options"
-    mkdir -p "$WINEPREFIX/drive_c/users/$USER/Application Data/Autodesk/Neutron Platform/Options"
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options"
 
-    # Setup winetricks requirements
-    ${winetricks}/bin/winetricks -q atmlib gdiplus arial corefonts cjkfonts
-    ${winetricks}/bin/winetricks -q dotnet452 msxml4 msxml6 vcrun2017
+    # Basic Windows requirements
+    ${winetricks}/bin/winetricks -q atmlib gdiplus arial corefonts dotnet452
+    ${winetricks}/bin/winetricks -q msxml4 msxml6 vcrun2017
     ${winetricks}/bin/winetricks -q fontsmooth=rgb winhttp win10
 
-    # Run cjkfonts again as sometimes it fails first time
-    ${winetricks}/bin/winetricks -q cjkfonts
-
-    # Copy installers to wine prefix
+    # Copy installers
     cp ${src} "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe"
     cp ${webview2Installer} "$WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe"
 
-    # Install WebView2
+    # Install WebView2 first
     ${wine64}/bin/wine64 "$WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe" /install
 
     # Install Fusion 360
     ${wine64}/bin/wine64 "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe" --quiet
-  '';
 
-  # Enable Vulkan/DXVK support
-  enableVulkan = true;
+    # Registry modifications for better compatibility
+    ${wine64}/bin/wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "adpclientservice.exe" /t REG_SZ /d "" /f
+    ${wine64}/bin/wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "AdCefWebBrowser.exe" /t REG_SZ /d "builtin" /f
+    ${wine64}/bin/wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "msvcp140" /t REG_SZ /d "native" /f
+    ${wine64}/bin/wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "mfc140u" /t REG_SZ /d "native" /f
+    ${wine64}/bin/wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "bcp47langs" /t REG_SZ /d "" /f
+  '';
 
   # File mappings for configuration persistence
   fileMap = {
@@ -104,15 +99,8 @@ mkWindowsApp rec {
     "$HOME/.config/fusion360/local-config" = "drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options";
   };
 
-  # Run Fusion 360
+  # Launch command
   winAppRun = ''
-    export WINEARCH=win64
-    export WINEPREFIX="$WINEPREFIX"
-
-    # Create required directories if they don't exist
-    mkdir -p "$HOME/.config/fusion360"
-    mkdir -p "$HOME/.cache/fusion360"
-
     ${wine64}/bin/wine64 "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/*.exe" "$ARGS"
   '';
 
@@ -127,26 +115,6 @@ mkWindowsApp rec {
       mimeTypes = ["x-scheme-handler/adskidmgr"];
     })
   ];
-
-  # Convert the ICO file to PNG for the desktop icon
-  desktopIcon = makeDesktopIcon {
-    name = pname;
-    src = builtins.fetchurl {
-      url = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/refs/heads/main/files/builds/stable-branch/bin/Fusion360.ico";
-      sha256 = "sha256:0ljgii5pf28y171dab23dghj8hslfimdigvvrwhnkj0rwkpz09is";
-    };
-  };
-
-  dontUnpack = true;
-
-  installPhase = ''
-    runHook preInstall
-
-    mkdir -p $out/bin
-    ln -s $out/bin/.launcher $out/bin/${pname}
-
-    runHook postInstall
-  '';
 
   meta = with lib; {
     description = "Integrated CAD, CAM, and PCB design software";
