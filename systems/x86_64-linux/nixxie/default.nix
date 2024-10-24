@@ -220,7 +220,6 @@ in {
     code-cursor
     gcc
     gh
-    git
     (hiPrio parallel)
 
     # Programming Languages & Tools
@@ -232,17 +231,10 @@ in {
     stack
 
     # System Tools
-    bat
     curl
-    fd
-    fish
-    htop
     kmod
     pciutils
-    ripgrep
-    tmux
     wget
-    zoxide
 
     # Security Tools
     burpsuite
@@ -258,11 +250,9 @@ in {
     ffmpeg
     grim
     imagemagick
-    mpv
     qimgv
     realesrgan-ncnn-vulkan
     slurp
-    yt-dlp
 
     # Virtualization
     libvirt
@@ -280,11 +270,7 @@ in {
     android-tools
     anki
     apktool
-    firefox
-    google-chrome
     jadx
-    kitty
-    neovim
     obsidian
     powershell
     veracrypt
@@ -298,7 +284,6 @@ in {
     mako
     moreutils
     openvpn
-    pandoc
     pavucontrol
     poppler_utils
     snowfallorg.flake
