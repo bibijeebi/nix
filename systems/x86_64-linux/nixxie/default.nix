@@ -95,7 +95,10 @@ in {
   };
 
   # Audio Configuration
-  hardware.pulseaudio.enable = false;
+  hardware = {
+    pulseaudio.enable = false;
+    opengl.driSupport32Bit = true;
+  };
 
   # Security
   security = {
@@ -312,5 +315,7 @@ in {
     fuse
     unionfs-fuse
     bindfs
+    wineWowPackages.stable
+    winetricks
   ];
 }
