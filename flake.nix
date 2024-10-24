@@ -21,9 +21,6 @@
     nixarr.url = "github:rasmus-kirk/nixarr";
 
     erosanix.url = "github:emmanuelrosa/erosanix";
-
-    stylix.url = "github:danth/stylix";
-    stylix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs:
@@ -34,7 +31,6 @@
       systems.modules.nixos = with inputs; [
         home-manager.nixosModules.home-manager
         nixarr.nixosModules.default
-        stylix.nixosModules.stylix
       ];
       overlays = with inputs; [
         snowfall-flake.overlays."package/flake"
