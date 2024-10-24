@@ -38,21 +38,11 @@
         };
       };
       commandLineArgs = [
-        # UI Cleanup
         "--disable-features=DownloadBubble,BookmarkBar,SidePanel,TabHoverCards,PageInfoHistory"
         "--disable-session-crashed-bubble"
-
-        # Performance Optimizations
         "--enable-features=BackForwardCache,MemorySaver,HighEfficiencyMode,LazyFrameLoading"
-
-        # Hardware Acceleration
-        "--enable-gpu-rasterization"
-        "--enable-zero-copy"
-        "--ignore-gpu-blocklist"
-
-        # Privacy & Security
-        "--disable-features=PrivacySandbox,FledgeInterestGroups"
         "--force-dark-mode"
+        "--use-gl=desktop"
       ];
     };
 
