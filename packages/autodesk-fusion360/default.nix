@@ -1,7 +1,8 @@
 {
   lib,
   mkWindowsApp,
-  wine64,
+  wine64, # Explicitly use wine64
+  wine, # Need this for winetricks
   fetchurl,
   makeDesktopItem,
   makeDesktopIcon,
@@ -9,7 +10,6 @@
   copyDesktopIcons,
   winetricks,
   cabextract,
-  bindfs,
   gdk-pixbuf,
   libnotify,
 }:
@@ -33,10 +33,10 @@ mkWindowsApp rec {
     copyDesktopIcons
     winetricks
     cabextract
+    wine # Needed for winetricks
   ];
 
   buildInputs = [
-    bindfs
     gdk-pixbuf
     libnotify
   ];
@@ -48,23 +48,18 @@ mkWindowsApp rec {
   # DLL overrides in winetricks format
   dllOverrides = "adpclientservice=disabled;AdCefWebBrowser.exe=builtin;msvcp140=native;mfc140u=native;bcp47langs=disabled";
 
-  # Create necessary directories before wine initialization
-  preWineInit = ''
-    mkdir -p "$WINEPREFIX"
-    mkdir -p "$WINEPREFIX/drive_c/users/$USER/Downloads"
-    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Microsoft/Internet Explorer/Quick Launch/User Pinned/"
-    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options"
-    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options"
-    mkdir -p "$WINEPREFIX/drive_c/users/$USER/Application Data/Autodesk/Neutron Platform/Options"
-  '';
-
   # Based on the required packages from the install script
   winAppInstall = ''
-    # Make sure we're starting fresh
-    rm -rf $WINEPREFIX/*
+    # Initialize fresh 64-bit prefix
+    rm -rf "$WINEPREFIX"
+    mkdir -p "$WINEPREFIX"
 
-    # Initialize 64-bit prefix
-    WINEARCH=win64 wineboot --init
+    # Ensure we're using 64-bit wine
+    export WINEARCH=win64
+    export WINEPREFIX="$WINEPREFIX"
+
+    # Initialize wine prefix
+    ${wine64}/bin/wineboot --init
 
     # Wait for wineboot to finish
     while pgrep wineboot >/dev/null; do
@@ -72,34 +67,33 @@ mkWindowsApp rec {
       sleep 1
     done
 
+    # Create all required directories
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/Downloads"
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Microsoft/Internet Explorer/Quick Launch/User Pinned/"
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options"
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options"
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/Application Data/Autodesk/Neutron Platform/Options"
+
     # Setup winetricks requirements
-    WINEARCH=win64 winetricks -q atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017
-    WINEARCH=win64 winetricks -q fontsmooth=rgb winhttp win10
+    ${winetricks}/bin/winetricks -q atmlib gdiplus arial corefonts cjkfonts
+    ${winetricks}/bin/winetricks -q dotnet452 msxml4 msxml6 vcrun2017
+    ${winetricks}/bin/winetricks -q fontsmooth=rgb winhttp win10
 
     # Run cjkfonts again as sometimes it fails first time
-    WINEARCH=win64 winetricks -q cjkfonts
-
-    # Ensure Windows 10 mode is set
-    WINEARCH=win64 winetricks -q win10
+    ${winetricks}/bin/winetricks -q cjkfonts
 
     # Copy installers to wine prefix
     cp ${src} "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe"
     cp ${webview2Installer} "$WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe"
 
     # Install WebView2
-    WINEARCH=win64 wine "$WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe" /install
-
-    # Wait for WebView2 installation to finish
-    while pgrep WebView2 >/dev/null; do
-      echo "Waiting for WebView2 installation to finish..."
-      sleep 1
-    done
+    ${wine64}/bin/wine64 "$WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe" /install
 
     # Install Fusion 360
-    WINEARCH=win64 wine "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe" --quiet
+    ${wine64}/bin/wine64 "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe" --quiet
   '';
 
-  # Enable Vulkan/DXVK support as per the install script
+  # Enable Vulkan/DXVK support
   enableVulkan = true;
 
   # File mappings for configuration persistence
@@ -112,27 +106,14 @@ mkWindowsApp rec {
 
   # Run Fusion 360
   winAppRun = ''
+    export WINEARCH=win64
+    export WINEPREFIX="$WINEPREFIX"
+
     # Create required directories if they don't exist
     mkdir -p "$HOME/.config/fusion360"
     mkdir -p "$HOME/.cache/fusion360"
 
-    # Mount directories using bindfs instead of fusermount
-    for dir in "$HOME/.config/fusion360" "$HOME/.cache/fusion360"; do
-      if ! mountpoint -q "$dir"; then
-        bindfs --no-allow-other "$dir" "$dir"
-      fi
-    done
-
-    WINEARCH=win64 wine "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/*.exe" "$ARGS"
-  '';
-
-  # Clean up bindfs mounts
-  postRun = ''
-    for dir in "$HOME/.config/fusion360" "$HOME/.cache/fusion360"; do
-      if mountpoint -q "$dir"; then
-        umount "$dir"
-      fi
-    done
+    ${wine64}/bin/wine64 "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/*.exe" "$ARGS"
   '';
 
   desktopItems = [
@@ -147,16 +128,11 @@ mkWindowsApp rec {
     })
   ];
 
-  # Convert the ICO file to PNG for the desktop icon
   desktopIcon = makeDesktopIcon {
     name = pname;
-    src = builtins.fetchurl {
-      url = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/refs/heads/main/files/builds/stable-branch/bin/Fusion360.ico";
-      sha256 = "sha256:0ljgii5pf28y171dab23dghj8hslfimdigvvrwhnkj0rwkpz09is";
-    };
+    src = ./files/builds/stable-branch/bin/Fusion360.ico;
   };
 
-  # Skip the unpack phase since we're using the exe directly
   dontUnpack = true;
 
   installPhase = ''

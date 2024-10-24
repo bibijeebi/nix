@@ -97,7 +97,11 @@ in {
   # Audio Configuration
   hardware = {
     pulseaudio.enable = false;
-    opengl.driSupport32Bit = true;
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+    };
   };
 
   # Security
@@ -311,7 +315,8 @@ in {
     fuse
     unionfs-fuse
     bindfs
-    wineWowPackages.stable
+    wine64
+    wine
     winetricks
   ];
 }
