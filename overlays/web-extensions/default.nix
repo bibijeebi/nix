@@ -1,3 +1,3 @@
-_final: prev: {
+{...}: _final: prev: {
   inherit (prev.internal) web-extensions webext-utils;
 }
