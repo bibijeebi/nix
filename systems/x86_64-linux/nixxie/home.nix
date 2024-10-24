@@ -38,11 +38,8 @@
         };
       };
       commandLineArgs = [
-        "--disable-features=DownloadBubble,BookmarkBar,SidePanel,TabHoverCards,PageInfoHistory"
+        "--disable-features=DownloadBubble,BookmarkBar"
         "--disable-session-crashed-bubble"
-        "--enable-features=BackForwardCache,MemorySaver,HighEfficiencyMode,LazyFrameLoading"
-        "--force-dark-mode"
-        "--use-gl=desktop"
       ];
     };
 
