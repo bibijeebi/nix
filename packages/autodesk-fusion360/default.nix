@@ -36,6 +36,7 @@ mkWindowsApp rec {
     winetricks
     cabextract
     wine # Needed for winetricks
+    makeWrapper
   ];
 
   buildInputs = [
