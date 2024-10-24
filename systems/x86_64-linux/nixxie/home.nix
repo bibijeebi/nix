@@ -24,6 +24,38 @@
       shellInitLast = "zoxide init fish | source";
     };
 
+    chromium = {
+      enable = true;
+      package = pkgs.google-chrome;
+      extensions = {
+        "cjpalhdlnbpafiamejdnhcphjbkeiagm" = {
+          id = "cjpalhdlnbpafiamejdnhcphjbkeiagm";
+          updateUrl = "https://clients2.google.com/service/update2/crx";
+        };
+        "eimadpbcbfnmbkopoojfekhnkhdbieeh" = {
+          id = "eimadpbcbfnmbkopoojfekhnkhdbieeh";
+          updateUrl = "https://clients2.google.com/service/update2/crx";
+        };
+      };
+      commandLineArgs = [
+        # UI Cleanup
+        "--disable-features=DownloadBubble,BookmarkBar,SidePanel,TabHoverCards,PageInfoHistory"
+        "--disable-session-crashed-bubble"
+
+        # Performance Optimizations
+        "--enable-features=BackForwardCache,MemorySaver,HighEfficiencyMode,LazyFrameLoading"
+
+        # Hardware Acceleration
+        "--enable-gpu-rasterization"
+        "--enable-zero-copy"
+        "--ignore-gpu-blocklist"
+
+        # Privacy & Security
+        "--disable-features=PrivacySandbox,FledgeInterestGroups"
+        "--force-dark-mode"
+      ];
+    };
+
     neovim = {
       enable = true;
       defaultEditor = true;
