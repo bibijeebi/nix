@@ -3,14 +3,58 @@
 
 set -euo pipefail
 
+# Configuration
+readonly DEFAULT_MAX_FILE_SIZE=500000 # 500KB
+readonly ANTHROPIC_MODEL="claude-3-5-sonnet-20241022"
+readonly CHROME_EXTENSION_DIR="$HOME/.config/google-chrome/Default/Extensions"
+
+# Common library files to skip
+readonly SKIP_LIBRARIES=(
+    "jquery" "angular" "react" "vue" "lodash" "polyfill"
+)
+
+# Common library directories to skip
+readonly SKIP_DIRECTORIES=(
+    "vendor" "lib" "dist" "build" "node_modules"
+)
+
+# Priority extension source files
+readonly PRIORITY_FILES=(
+    "background.js" "content.js" "index.js" "popup.js"
+    "options.js" "main.js"
+)
+
+# Priority directories
+readonly PRIORITY_DIRS=(
+    "js" "src" "background" "content"
+)
+
+# Colors for output
+readonly COLOR_ERROR='\033[0;31m'
+readonly COLOR_SUCCESS='\033[0;32m'
+readonly COLOR_WARNING='\033[1;33m'
+readonly COLOR_NC='\033[0m'
+
+# Logging functions
+log_error() {
+    echo -e "${COLOR_ERROR}Error: $1${COLOR_NC}" >&2
+}
+
+log_success() {
+    echo -e "${COLOR_SUCCESS}$1${COLOR_NC}"
+}
+
+log_warning() {
+    echo -e "${COLOR_WARNING}Warning: $1${COLOR_NC}"
+}
+
 # Find the latest version directory for an extension
 find_extension_path() {
     local ext_id="$1"
-    local chrome_dir="$HOME/.config/google-chrome/Default/Extensions"
-    local ext_path="$chrome_dir/$ext_id"
+    local ext_path="$CHROME_EXTENSION_DIR/$ext_id"
 
     if [ ! -d "$ext_path" ]; then
-        echo "Error: Extension $ext_id not found" >&2
+        log_error "Extension $ext_id not found"
         exit 1
     fi
 
@@ -20,7 +64,7 @@ find_extension_path() {
     echo "$ext_path/$latest_version"
 }
 
-# Check if a JS file is likely worth analyzing
+# Check if a JS file is worth analyzing
 is_interesting_js() {
     local file="$1"
     local filename
@@ -34,37 +78,31 @@ is_interesting_js() {
     fi
 
     # Skip common library files
-    if [[ $filename == jquery* ]] ||
-        [[ $filename == angular* ]] ||
-        [[ $filename == react* ]] ||
-        [[ $filename == vue* ]] ||
-        [[ $filename == lodash* ]] ||
-        [[ $filename == polyfill* ]]; then
-        return 1
-    fi
+    for lib in "${SKIP_LIBRARIES[@]}"; do
+        if [[ $filename == $lib* ]]; then
+            return 1
+        fi
+    done
 
     # Skip files in common library directories
-    if [[ $dirpath == */vendor/* ]] ||
-        [[ $dirpath == */lib/* ]] ||
-        [[ $dirpath == */dist/* ]] ||
-        [[ $dirpath == */build/* ]] ||
-        [[ $dirpath == */node_modules/* ]]; then
-        return 1
-    fi
+    for dir in "${SKIP_DIRECTORIES[@]}"; do
+        if [[ $dirpath == */$dir/* ]]; then
+            return 1
+        fi
+    done
 
     # Prioritize common extension source files
-    if [[ $filename == background.js ]] ||
-        [[ $filename == content.js ]] ||
-        [[ $filename == index.js ]] ||
-        [[ $filename == popup.js ]] ||
-        [[ $filename == options.js ]] ||
-        [[ $filename == main.js ]] ||
-        [[ $dirpath == */js/* ]] ||
-        [[ $dirpath == */src/* ]] ||
-        [[ $dirpath == */background/* ]] ||
-        [[ $dirpath == */content/* ]]; then
-        return 0
-    fi
+    for priority_file in "${PRIORITY_FILES[@]}"; do
+        if [[ $filename == $priority_file ]]; then
+            return 0
+        fi
+    done
+
+    for priority_dir in "${PRIORITY_DIRS[@]}"; do
+        if [[ $dirpath == */$priority_dir/* ]]; then
+            return 0
+        fi
+    done
 
     # If it's a lone JS file in the extension root or a small directory
     local js_count
@@ -76,21 +114,21 @@ is_interesting_js() {
     # Check file size - skip very large files (likely bundled/generated)
     local file_size
     file_size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file")
-    if [ "$file_size" -gt 500000 ]; then # Skip files larger than 500KB
+    if [ "$file_size" -gt "$DEFAULT_MAX_FILE_SIZE" ]; then
         return 1
     fi
 
     return 1
 }
 
-# Call Anthropic API to analyze the extension
+# Analyze extension using Anthropic API
 analyze_extension() {
     local content
     content=$(cat)
     local api_key="$ANTHROPIC_API_KEY"
 
     if [ -z "$api_key" ]; then
-        echo "Error: ANTHROPIC_API_KEY environment variable not set" >&2
+        log_error "ANTHROPIC_API_KEY environment variable not set"
         exit 1
     fi
 
@@ -134,52 +172,66 @@ Please provide a comprehensive analysis of this code, following these steps:
     - Highlight the most interesting or reusable code sections
     - Suggest potential ways to adapt or improve upon the extension's features
 
-Before providing your final analysis, wrap your analysis inside <code_breakdown> tags to break down your findings and show your thought process. This will help ensure a thorough interpretation of the code.
-
-In your analysis and final output, prioritize:
-1. Understanding and explaining novel functionality
-2. Identifying interesting implementation techniques
-3. De-obfuscating complex code sections
-4. Providing insights for potential reuse or adaptation of code
-
-Please proceed with your analysis of the Chrome extension code.
+Before providing your final analysis, wrap your analysis inside <code_breakdown> tags to break down your findings and show your thought process.
 EOF
     )
 
-    echo "--- BEGIN ANALYSIS ---"
-    curl -s "https://api.anthropic.com/v1/messages" \
-        -H "x-api-key: $api_key" \
-        -H "anthropic-version: 2023-06-01" \
-        -H "content-type: application/json" \
-        -d "$(
-            cat <<EOF
-{
-    "model": "claude-3-5-sonnet-20241022",
-    "max_tokens": 8192,
-    "temperature": 0,
-    "messages": [
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": $(jq -R -s '.' <<<"$prompt")
-                }
-            ]
-        },
-        {
-            "role": "assistant",
-            "content": [
-                {
-                    "type": "text",
-                    "text": "<code_breakdown>"
-                }
-            ]
-        }
-    ]
-}
-EOF
-        )" | jq -r '.content[0].text'
+    # Call Anthropic API with retry mechanism
+    local max_retries=3
+    local retry_count=0
+    local response
+
+    while [ $retry_count -lt $max_retries ]; do
+        response=$(curl -s "https://api.anthropic.com/v1/messages" \
+            -H "x-api-key: $api_key" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "$(
+                jq -n \
+                    --arg model "$ANTHROPIC_MODEL" \
+                    --arg prompt "$prompt" \
+                    '{
+                        "model": $model,
+                        "max_tokens": 8192,
+                        "temperature": 0,
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": $prompt
+                                    }
+                                ]
+                            },
+                            {
+                                "role": "assistant",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "<code_breakdown>"
+                                    }
+                                ]
+                            }
+                        ]
+                    }'
+            )" 2>/dev/null)
+
+        if [ $? -eq 0 ] && [ -n "$response" ]; then
+            echo "$response" | jq -r '.content[0].text'
+            break
+        else
+            retry_count=$((retry_count + 1))
+            if [ $retry_count -lt $max_retries ]; then
+                log_warning "API call failed, retrying in 5 seconds..."
+                sleep 5
+            else
+                log_error "Failed to call Anthropic API after $max_retries attempts"
+                exit 1
+            fi
+        fi
+    done
+
     echo "--- END ANALYSIS ---"
     echo
     echo "--- BEGIN CONTENT ---"
@@ -211,10 +263,10 @@ get_manifest_js_files() {
     done
 }
 
-# Main script
+# Main script execution
 main() {
     if [ $# -ne 1 ]; then
-        echo "Usage: $0 <extension_id>" >&2
+        log_error "Usage: $0 <extension_id>"
         exit 1
     fi
 
@@ -223,7 +275,10 @@ main() {
     ext_path=$(find_extension_path "$ext_id")
     local manifest="$ext_path/manifest.json"
 
-    # Collect and analyze the extension content
+    log_success "Analyzing extension: $ext_id"
+    log_success "Path: $ext_path"
+
+    # Process and analyze the extension content
     {
         # Process manifest
         echo "--- BEGIN manifest.json ---"
@@ -242,7 +297,7 @@ main() {
             fi
         done < <(get_manifest_js_files "$manifest")
 
-        # Look for other interesting JS files in common locations
+        # Look for other interesting JS files
         while IFS= read -r file; do
             if is_interesting_js "$file"; then
                 local rel_path="${file#"$HOME/"}"
