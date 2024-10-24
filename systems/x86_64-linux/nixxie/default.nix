@@ -17,6 +17,7 @@ in {
   # Boot Configuration
   boot = {
     supportedFilesystems = ["fuse"];
+    kernelModules = ["fuse"];
     kernel.sysctl."kernel.unprivileged_userns_clone" = 1;
     loader = {
       systemd-boot.enable = true;
@@ -100,6 +101,20 @@ in {
   security = {
     sudo.wheelNeedsPassword = false;
     rtkit.enable = true;
+    wrappers = {
+      fusermount = {
+        source = "${pkgs.fuse}/bin/fusermount";
+        owner = "root";
+        group = "root";
+        setuid = true;
+      };
+      bindfs = {
+        owner = "root";
+        group = "root";
+        capabilities = "cap_sys_admin+ep";
+        source = "${pkgs.bindfs}/bin/bindfs";
+      };
+    };
   };
 
   # Fonts
@@ -118,6 +133,10 @@ in {
 
   # Programs
   programs = {
+    wine = {
+      enable = true;
+      architecture = "x86_64";
+    };
     firefox.enable = true;
     dconf.enable = true;
     mtr.enable = true;
@@ -289,5 +308,9 @@ in {
     wl-clipboard
     wordlists
     zip
+
+    fuse
+    unionfs-fuse
+    bindfs
   ];
 }
