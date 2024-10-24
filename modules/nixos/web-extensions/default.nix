@@ -1,80 +1,72 @@
-# modules/web-extensions/default.nix
+# modules/nixos/web-extensions/default.nix
 {
   config,
   lib,
   ...
 }:
 with lib; let
-  cfg = config.programs.chromium.webext;
+  cfg = config.programs.chromium;
+  webExtCfg = cfg.webext;
 
-  # Import your buildChromeExtension
-
-  # Extension submodule type
-  extensionOpts = types.submodule {
+  # Extension configuration type
+  extensionOptions = {
+    ...
+  }: {
     options = {
-      enable = mkEnableOption "this extension";
+      enable = mkEnableOption "extension";
       package = mkOption {
         type = types.package;
         description = "The extension package";
       };
     };
   };
+
+  # Get enabled extensions
+  enabledExtensions = filterAttrs (_n: e: e.enable) webExtCfg.extensions;
+
+  # Convert extensions to Chrome policy format
+  extensionPolicies =
+    mapAttrs' (
+      _name: ext:
+        nameValuePair ext.package.extensionId {
+          installation_mode = "force_installed";
+          update_url = "file://${ext.package}/share/chrome-extensions/update.xml";
+        }
+    )
+    enabledExtensions;
+
+  # Generate Chrome policies
+  chromePolicies = {
+    ExtensionSettings = extensionPolicies;
+    ExtensionInstallForcelist = map (
+      ext: "${ext.package.extensionId};file://${ext.package}/share/chrome-extensions/update.xml"
+    ) (attrValues enabledExtensions);
+  };
 in {
   options = {
     programs.chromium.webext = {
-      enable = mkEnableOption "web extension support";
+      enable = mkEnableOption "Chrome extension management";
 
       extensions = mkOption {
-        type = types.attrsOf extensionOpts;
+        type = types.attrsOf (types.submodule extensionOptions);
         default = {};
         description = "Set of extensions to install";
-        example = literalExpression ''
-          {
-            altdown = {
-              enable = true;
-              package = pkgs.web-extensions.altdown;
-            };
-          }
-        '';
       };
 
-      allowFileAccess = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Whether to allow extensions to access local files";
+      globalPolicy = mkOption {
+        type = types.attrs;
+        default = {};
+        description = "Additional Chrome policies to apply";
       };
     };
   };
 
-  config = mkIf cfg.enable {
-    programs.chromium = {
-      extensions =
-        map
-        (ext: ext.package.extensionString)
-        (filter (ext: ext.enable) (attrValues cfg.extensions));
+  config = mkIf (cfg.enable && webExtCfg.enable) {
+    # Set up Chrome policies directory
+    environment.etc."chrome/policies/managed/extensions.json".text =
+      builtins.toJSON (chromePolicies // webExtCfg.globalPolicy);
 
-      extraOpts = {
-        # Basic extension requirements
-        ExtensionInstallSources = mkIf cfg.allowFileAccess [
-          "file://*"
-          "https://*"
-        ];
-
-        ExtensionManifestV2Availability = 1;
-
-        # Allow external extensions
-        BlockExternalExtensions = false;
-
-        # Default extension settings
-        ExtensionSettings = {
-          "*" = {
-            installation_mode = "allowed";
-            allowed_types = ["extension" "user_script"];
-          };
-        };
-
-        # You could add more reasonable defaults here
-      };
-    };
+    # Add extensions to system packages
+    environment.systemPackages = map (ext: ext.package) (attrValues enabledExtensions);
   };
 }
