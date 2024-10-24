@@ -88,7 +88,6 @@
           src = pkgs.fishPlugins.tide.src;
         }
       ];
-      vendor.completions.enable = true;
     };
 
     chromium = {
@@ -192,7 +191,7 @@
 
   qt = {
     enable = true;
-    qt.platformTheme.name = "gtk2";
+    platformTheme.name = "gtk2";
   };
 
   fonts.fontconfig.enable = true;
