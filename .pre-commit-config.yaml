@@ -1,5 +1,3 @@
-# See https://pre-commit.com for more information
-# See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 873992cf07fee49661fd05cc963e6ae6b46e1462
@@ -12,5 +10,5 @@ repos:
     rev: b341adb745fd29075869a52161ae0097ceb7d3a6
     hooks:
       - id: deadnix
-        args: [--edit] # Uncomment to automatically modify files
+        args: [--edit]
         stages: [commit]
