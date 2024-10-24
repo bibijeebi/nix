@@ -235,7 +235,6 @@ in {
     ffmpeg
     grim
     imagemagick
-    imv
     mpv
     qimgv
     realesrgan-ncnn-vulkan
@@ -289,7 +288,6 @@ in {
     vdhcoapp
     wl-clipboard
     wordlists
-    xclip
     zip
   ];
 }

@@ -1,132 +1,124 @@
 {
   lib,
   mkWindowsApp,
+  wine,
   fetchurl,
   makeDesktopItem,
   makeDesktopIcon,
   copyDesktopItems,
   copyDesktopIcons,
-  wine,
   winetricks,
-  p7zip,
-}: let
-  version = "2.0.18313";
+  cabextract,
+}:
+mkWindowsApp rec {
+  pname = "fusion360";
+  version = "latest"; # Fusion 360 uses rolling releases
 
-  # URLs for downloads
-  fusion360Url = "https://dl.appstreaming.autodesk.com/production/installers/Fusion%20Admin%20Install.exe";
-  webview2Url = "https://github.com/aedancullen/webview2-evergreen-standalone-installer-archive/releases/download/109.0.1518.78/MicrosoftEdgeWebView2RuntimeInstallerX64.exe";
-  qt6WebEngineCoreUrl = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/main/files/extras/patched-dlls/Qt6WebEngineCore.dll.7z";
-  siappdllUrl = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/main/files/extras/patched-dlls/siappdll.dll";
-in
-  mkWindowsApp rec {
-    inherit version wine;
+  # The installer is downloaded dynamically by the script, we'll need to fetch it
+  src = fetchurl {
+    url = "https://dl.appstreaming.autodesk.com/production/installers/Fusion%20Admin%20Install.exe";
+    sha256 = ""; # Need to add actual hash
+  };
 
-    pname = "fusion360";
+  webview2Installer = fetchurl {
+    url = "https://github.com/aedancullen/webview2-evergreen-standalone-installer-archive/releases/download/109.0.1518.78/MicrosoftEdgeWebView2RuntimeInstallerX64.exe";
+    sha256 = ""; # Need to add actual hash
+  };
 
-    src = fetchurl {
-      url = fusion360Url;
-      sha256 = "sha256-hizfizCbmo9Hk1qEM26c13amdXLNcKD4QzdpQZcLnOE=";
-    };
+  nativeBuildInputs = [
+    copyDesktopItems
+    copyDesktopIcons
+    winetricks
+    cabextract
+  ];
 
-    webview2 = fetchurl {
-      url = webview2Url;
-      sha256 = "0nzxp64qfn9yii1n7cywl8ym88kzli2ak7sdcva045127s34kk7j";
-    };
+  inherit wine;
+  wineArch = "win64";
 
-    qt6WebEngineCore = fetchurl {
-      url = qt6WebEngineCoreUrl;
-      sha256 = "1cll0g2vqsxasw7rhq0wxsb8qici4a29iaczdxahj5arlrlpjm62";
-    };
+  # Required DLL overrides from the install script
+  dllOverrides = {
+    adpclientservice = ""; # Remove tracking metrics
+    "AdCefWebBrowser.exe" = "builtin"; # Navigation bar fix
+    msvcp140 = "native"; # Use bundled VS redist
+    mfc140u = "native"; # Use bundled VS redist
+    bcp47langs = ""; # Fix login issues
+  };
 
-    siappdll = fetchurl {
-      url = siappdllUrl;
-      sha256 = "1wy044ar27kyd7vq01axq0izw6hbkgjqacjgkshikxa3c5j6vs5a";
-    };
+  # Based on the required packages from the install script
+  winetricksRequirements = [
+    "atmlib"
+    "gdiplus"
+    "arial"
+    "corefonts"
+    "cjkfonts"
+    "dotnet452"
+    "msxml4"
+    "msxml6"
+    "vcrun2017"
+    "fontsmooth=rgb"
+    "winhttp"
+    "win10"
+  ];
 
-    # We want notifications since Fusion install takes a while
-    enableInstallNotification = true;
+  # Enable Vulkan/DXVK support as per the install script
+  enableVulkan = true;
 
-    # We need registry persistence for Fusion's settings
-    persistRegistry = true;
+  # File mappings for configuration persistence
+  fileMap = {
+    "$HOME/.config/fusion360/SumatraPDF-settings.txt" = "drive_c/fusion360/SumatraPDF-settings.txt";
+    "$HOME/.cache/fusion360" = "drive_c/fusion360/cache";
+  };
 
-    # Keep runtime layer for updates
-    persistRuntimeLayer = true;
+  # Installation steps from the script
+  winAppInstall = ''
+    # Copy installers to wine prefix
+    cp ${src} $WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe
+    cp ${webview2Installer} $WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe
 
-    inputHashMethod = "store-path";
+    # Install WebView2
+    wine $WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe /install
 
-    nativeBuildInputs = [copyDesktopItems copyDesktopIcons winetricks p7zip];
+    # Create required directories
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Microsoft/Internet Explorer/Quick Launch/User Pinned/"
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options"
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options"
+    mkdir -p "$WINEPREFIX/drive_c/users/$USER/Application Data/Autodesk/Neutron Platform/Options"
 
-    dontUnpack = true;
+    # Install Fusion 360
+    wine $WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe --quiet
+  '';
 
-    # Map config files to persist between runs
-    fileMap = {
-      "$HOME/.config/fusion360/Options" = "drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options";
-    };
+  # Run Fusion 360
+  winAppRun = ''
+    wine "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/*.exe" "$ARGS"
+  '';
 
-    # Install required Windows components and Fusion 360
-    winAppInstall = ''
-      # Set up wine prefix with required components
-      winetricks -q sandbox
-      winetricks -q atmlib gdiplus arial corefonts cjkfonts dotnet452 msxml4 msxml6 vcrun2017 fontsmooth=rgb winhttp win10
-
-      # Install WebView2
-      cp ${webview2} "$WINEPREFIX/drive_c/webview2.exe"
-      $WINE "$WINEPREFIX/drive_c/webview2.exe" /silent /install
-      wineserver -w
-
-      # Install Fusion 360
-      $WINE ${src} --quiet
-      wineserver -w
-
-      # Extract and install patched DLLs
-      mkdir -p "$WINEPREFIX/drive_c/Program Files/Autodesk/webEngine"
-      7z e ${qt6WebEngineCore} -o"$WINEPREFIX/drive_c/Program Files/Autodesk/webEngine"
-      cp ${siappdll} "$WINEPREFIX/drive_c/Program Files/Autodesk/webEngine"
-
-      # Configure registry
-      $WINE reg ADD "HKCU\\Software\\Wine\\DllOverrides" /v "adpclientservice.exe" /t REG_SZ /d "" /f
-      $WINE reg ADD "HKCU\\Software\\Wine\\DllOverrides" /v "AdCefWebBrowser.exe" /t REG_SZ /d builtin /f
-      $WINE reg ADD "HKCU\\Software\\Wine\\DllOverrides" /v "msvcp140" /t REG_SZ /d native /f
-      $WINE reg ADD "HKCU\\Software\\Wine\\DllOverrides" /v "mfc140u" /t REG_SZ /d native /f
-      $WINE reg ADD "HKCU\\Software\\Wine\\DllOverrides" /v "bcp47langs" /t REG_SZ /d "" /f
-    '';
-
-    # Launch Fusion 360
-    winAppRun = ''
-      $WINE "$WINEPREFIX/drive_c/Program Files/Autodesk/Fusion 360/Fusion360.exe" "$ARGS"
-    '';
-
-    installPhase = ''
-      runHook preInstall
-      ln -s $out/bin/.launcher $out/bin/${pname}
-      runHook postInstall
-    '';
-
-    desktopItems = [
-      (makeDesktopItem {
-        name = "Fusion360";
-        exec = pname;
-        icon = pname;
-        desktopName = "Autodesk Fusion 360";
-        genericName = "CAD Application";
-        categories = ["Graphics" "Engineering"];
-        mimeTypes = ["x-scheme-handler/fusion360"];
-      })
-    ];
-
-    desktopIcon = makeDesktopIcon {
+  desktopItems = [
+    (makeDesktopItem {
       name = pname;
-      src = fetchurl {
-        url = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/main/files/setup/resource/graphics/autodesk_fusion.svg";
-        sha256 = "sha256-YSz+4mWksZbut/gv4dt7d6MjsKhqNgWU2rbO2KmixOw=";
-      };
-    };
+      exec = pname;
+      icon = pname;
+      desktopName = "Autodesk Fusion 360";
+      genericName = "CAD Application";
+      categories = ["Graphics" "Engineering"];
+      mimeTypes = ["x-scheme-handler/adskidmgr"];
+    })
+  ];
 
-    meta = with lib; {
-      description = "Cloud-based 3D CAD/CAM software for product design and manufacturing";
-      homepage = "https://www.autodesk.com/products/fusion-360/";
-      license = licenses.unfree;
-      maintainers = with maintainers; [];
-      platforms = ["x86_64-linux"];
+  desktopIcon = makeDesktopIcon {
+    name = pname;
+    src = fetchurl {
+      url = "https://raw.githubusercontent.com/cryinkfly/Autodesk-Fusion-360-for-Linux/main/files/builds/stable-branch/bin/fusion360.svg";
+      sha256 = ""; # Need to add actual hash
     };
-  }
+  };
+
+  meta = with lib; {
+    description = "Integrated CAD, CAM, and PCB design software";
+    homepage = "https://www.autodesk.com/products/fusion-360/";
+    license = licenses.unfree;
+    sourceProvenance = with sourceTypes; [binaryNativeCode];
+    platforms = ["x86_64-linux"];
+    maintainers = with maintainers; [];
+  };
+}

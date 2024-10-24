@@ -80,7 +80,6 @@
 
     # Media Tools
     gallery-dl.enable = true; # Image downloader
-    imv.enable = true; # Image viewer
     mpv.enable = true; # Media player
     yt-dlp.enable = true; # Video downloader
 
