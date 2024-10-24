@@ -18,7 +18,6 @@
     MANPAGER = "sh -c 'col -bx | bat -l man -p'"; # Better man pages
 
     MOZ_USE_XINPUT2 = "1"; # Better Firefox touch/scrolling
-    QT_QPA_PLATFORMTHEME = "gtk2"; # Consistent QT/GTK theming
   };
 
   programs = {
@@ -37,6 +36,59 @@
       enable = true;
       interactiveShellInit = "set fish_greeting";
       shellInitLast = "zoxide init fish | source";
+      shellAliases = {
+        clp = "wl-copy";
+        pst = "wl-paste";
+        t = "task";
+        ya = "yazi";
+      };
+      plugins = [
+        # Efficient directory jumping (since you're using zoxide)
+        {
+          name = "z";
+          src = pkgs.fishPlugins.z.src;
+        }
+        # Auto-complete matching pairs (parentheses, quotes, etc.)
+        {
+          name = "autopair";
+          src = pkgs.fishPlugins.autopair.src;
+        }
+        # Reminds you when you have an alias for a command
+        {
+          name = "fish-you-should-use";
+          src = pkgs.fishPlugins.fish-you-should-use.src;
+        }
+        # Colored man pages
+        {
+          name = "colored-man-pages";
+          src = pkgs.fishPlugins.colored-man-pages.src;
+        }
+        # Notifications when long processes finish
+        {
+          name = "done";
+          src = pkgs.fishPlugins.done.src;
+        }
+        # Enhanced fzf integration
+        {
+          name = "fzf-fish";
+          src = pkgs.fishPlugins.fzf-fish.src;
+        }
+        # Git abbreviations
+        {
+          name = "git-abbr";
+          src = pkgs.fishPlugins.git-abbr.src;
+        }
+        # Clean command history (removes typos, etc.)
+        {
+          name = "sponge";
+          src = pkgs.fishPlugins.sponge.src;
+        }
+        {
+          name = "tide";
+          src = pkgs.fishPlugins.tide.src;
+        }
+      ];
+      vendor.completions.enable = true;
     };
 
     chromium = {
@@ -140,7 +192,7 @@
 
   qt = {
     enable = true;
-    platformTheme = "gtk";
+    qt.platformTheme.name = "gtk2";
   };
 
   fonts.fontconfig.enable = true;

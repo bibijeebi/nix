@@ -73,6 +73,8 @@ in {
 
   # Display and Desktop Services
   services = {
+    udisks2.enable = true;
+    gvfs.enable = true;
     flatpak.enable = true;
     displayManager = {
       sddm = {
@@ -122,8 +124,12 @@ in {
 
   # Security
   security = {
-    sudo.wheelNeedsPassword = false;
     rtkit.enable = true;
+    polkit.enable = true;
+    sudo.wheelNeedsPassword = false;
+    pam.services = {
+      login.enableGnomeKeyring = true;
+    };
     wrappers = {
       fusermount = {
         source = "${pkgs.fuse}/bin/fusermount";
@@ -197,7 +203,14 @@ in {
   users.users.bibi = {
     isNormalUser = true;
     description = "bibi";
-    extraGroups = ["networkmanager" "wheel" "libvirtd" "docker" "fuse"];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "audio"
+      "libvirtd"
+      "docker"
+      "fuse"
+    ];
     shell = pkgs.fish;
   };
 
@@ -317,7 +330,5 @@ in {
     wine64
     wine
     winetricks
-
-    gvfs
   ];
 }
