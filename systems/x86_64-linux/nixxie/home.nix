@@ -110,6 +110,19 @@
     taskwarrior.enable = true; # Task management
   };
 
+  # In your home-manager configuration
+  gtk = {
+    enable = true;
+    theme = {
+      name = "Adwaita-dark";
+      package = pkgs.gnome.adwaita-icon-theme;
+    };
+    iconTheme = {
+      name = "Adwaita-dark";
+      package = pkgs.gnome.adwaita-icon-theme;
+    };
+  };
+
   # Window Manager
   wayland.windowManager.sway = {
     enable = true;
