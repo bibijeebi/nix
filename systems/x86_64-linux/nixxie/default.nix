@@ -58,6 +58,7 @@ in {
 
   # Display and Desktop Services
   services = {
+    flatpak.enable = true;
     displayManager = {
       sddm = {
         enable = true;
