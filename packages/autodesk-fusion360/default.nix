@@ -107,6 +107,17 @@ mkWindowsApp rec {
   # Skip the unpack phase since we're using the exe directly
   dontUnpack = true;
 
+  installPhase = ''
+    runHook preInstall
+
+    mkdir -p $out/bin
+    # The launcher script will be installed at $out/bin/.launcher by mkWindowsApp
+    # We need to create a symlink to it with our desired name
+    ln -s $out/bin/.launcher $out/bin/${pname}
+
+    runHook postInstall
+  '';
+
   meta = with lib; {
     description = "Integrated CAD, CAM, and PCB design software";
     homepage = "https://www.autodesk.com/products/fusion-360/";
