@@ -87,7 +87,6 @@ in {
   services = {
     udisks2.enable = true;
     gvfs.enable = true;
-    flatpak.enable = true;
     displayManager = {
       sddm = {
         enable = true;
@@ -339,8 +338,8 @@ in {
     fuse
     unionfs-fuse
     bindfs
-    wine64
-    wine
+    wineWowPackages.stagingFull
+    bottles
     winetricks
   ];
 }
