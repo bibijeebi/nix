@@ -115,6 +115,8 @@ in {
   services = {
     udisks2.enable = true;
 
+    flatpak.enable = true;
+
     displayManager = {
       sddm = {
         enable = true;
@@ -303,7 +305,6 @@ in {
     black
     cabal-install
     ghc
-    stylix.nixosModules.stylix
 
     haskell-language-server
     isort
@@ -379,7 +380,8 @@ in {
     fuse
     unionfs-fuse
     bindfs
-    wineWowPackages.stagingFull
+    wineWowPackages.waylandFull
+
     bottles
     winetricks
   ];
