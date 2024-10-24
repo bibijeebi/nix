@@ -136,10 +136,6 @@ in {
 
   # Programs
   programs = {
-    wine = {
-      enable = true;
-      architecture = "x86_64";
-    };
     firefox.enable = true;
     dconf.enable = true;
     mtr.enable = true;
