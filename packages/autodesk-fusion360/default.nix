@@ -45,6 +45,8 @@ mkWindowsApp rec {
   wine = wine64;
   wineArch = "win64";
 
+  dontUnpack = true;
+
   # Initialize wine prefix before installing
   preWineInit = ''
     # Ensure clean prefix
