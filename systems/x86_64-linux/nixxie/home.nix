@@ -118,17 +118,28 @@
   };
 
   xdg.mime.defaultApplications = {
-    "application/pdf" = "google-chrome.desktop";
-    "image/png" = "qimgv.desktop";
-    "image/jpeg" = "qimgv.desktop";
-    "text/plain" = "code-cursor.desktop";
-    "text/html" = "google-chrome.desktop";
-    "x-scheme-handler/http" = "google-chrome.desktop";
-    "x-scheme-handler/https" = "google-chrome.desktop";
-    "x-scheme-handler/about" = "google-chrome.desktop";
-    "x-scheme-handler/unknown" = "google-chrome.desktop";
-    "video/mp4" = "mpv.desktop";
-    "video/mkv" = "mpv.desktop";
+  };
+
+  xdg = {
+    mime.enable = true;
+    mimeApps = {
+      enable = true;
+      defaultApplications = {
+        "application/pdf" = ["google-chrome.desktop"];
+        "image/jpeg" = ["qimgv.desktop"];
+        "image/png" = ["qimgv.desktop"];
+        "inode/directory" = ["thunar.desktop"];
+        "text/html" = "google-chrome.desktop";
+        "text/plain" = ["neovim.desktop"];
+        "video/mkv" = ["mpv.desktop"];
+        "video/mp4" = ["mpv.desktop"];
+        "video/webm" = ["mpv.desktop"];
+        "x-scheme-handler/about" = ["google-chrome.desktop"];
+        "x-scheme-handler/http" = ["google-chrome.desktop"];
+        "x-scheme-handler/https" = ["google-chrome.desktop"];
+        "x-scheme-handler/unknown" = ["google-chrome.desktop"];
+      };
+    };
   };
 
   # System Services
