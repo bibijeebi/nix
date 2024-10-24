@@ -16,6 +16,7 @@
     };
     nixarr.url = "github:rasmus-kirk/nixarr";
     erosanix.url = "github:emmanuelrosa/erosanix";
+    base16.url = "github:SenchoPens/base16.nix";
   };
 
   outputs = inputs:

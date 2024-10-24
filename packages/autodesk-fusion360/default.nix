@@ -4,7 +4,6 @@
   wineWowPackages,
   fetchurl,
   makeDesktopItem,
-  makeDesktopIcon,
   copyDesktopItems,
   copyDesktopIcons,
   winetricks,

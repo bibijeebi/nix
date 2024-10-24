@@ -1,12 +1,9 @@
 {
-  channels,
-  inputs,
-  lib,
   ...
-}: final: prev: {
+}: _final: prev: {
   python3Packages = prev.python3Packages.override {
-    overrides = pfinal: pprev: {
-      openai = pprev.openai.overrideAttrs (oldAttrs: {
+    overrides = _pfinal: pprev: {
+      openai = pprev.openai.overrideAttrs (_oldAttrs: {
         version = "1.52.0";
         src = prev.fetchFromGitHub {
           owner = "openai";

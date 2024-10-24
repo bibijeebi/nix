@@ -1,8 +1,6 @@
 {
   pkgs,
-  lib,
   config,
-  inputs,
   ...
 }: {
   home.stateVersion = "24.05";
