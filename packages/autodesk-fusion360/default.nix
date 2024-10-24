@@ -13,9 +13,45 @@
   libnotify,
   writeShellScript,
   makeWrapper,
+  coreutils,
 }: let
-  # Use wineWowPackages.stable for proper 64-bit support
   winePackage = wineWowPackages.stable;
+
+  # Create a launcher script that ensures directories exist
+  launcherScript = writeShellScript "fusion360-launcher" ''
+    # Ensure HOME is set
+    export HOME=~
+
+    # Create required directories
+    mkdir -p "$HOME/.local/share/fusion360/prefix"
+
+    # Set Wine environment
+    export WINEARCH=win64
+    export WINEPREFIX="$HOME/.local/share/fusion360/prefix"
+    export WINEDLLOVERRIDES="winemenubuilder.exe=d;mscoree=d"
+    export DXVK_LOG_LEVEL=none
+    export DXVK_HUD=0
+
+    # Initialize prefix if needed
+    if [ ! -f "$WINEPREFIX/system.reg" ]; then
+      echo "Initializing Wine prefix..."
+      ${winePackage}/bin/wineboot --init
+
+      # Wait for wineboot
+      while pgrep wineboot >/dev/null; do
+        sleep 1
+      done
+    fi
+
+    # Find and launch Fusion 360
+    FUSION_EXE=$(find "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/" -name "*.exe" -type f 2>/dev/null | head -1)
+    if [ -n "$FUSION_EXE" ]; then
+      exec ${winePackage}/bin/wine64 "$FUSION_EXE" "$@"
+    else
+      echo "Error: Fusion 360 executable not found. Running installer..."
+      ${winePackage}/bin/wine64 "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe" --quiet
+    fi
+  '';
 in
   mkWindowsApp rec {
     pname = "fusion360";
@@ -38,6 +74,7 @@ in
       cabextract
       winePackage
       makeWrapper
+      coreutils
     ];
 
     buildInputs = [
@@ -45,14 +82,19 @@ in
       libnotify
     ];
 
-    # Use the full Wine package for proper architecture support
     wine = winePackage;
     wineArch = "win64";
 
     dontUnpack = true;
 
     winAppInstall = ''
-      # Initialize wine prefix
+      # Ensure directories exist
+      mkdir -p "$WINEPREFIX"
+      mkdir -p "$WINEPREFIX/drive_c/users/$USER/Downloads"
+      mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options"
+      mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options"
+
+      # Initialize prefix
       ${winePackage}/bin/wineboot --init
 
       # Wait for wineboot
@@ -60,17 +102,12 @@ in
         sleep 1
       done
 
-      # Install dependencies
+      # Basic Windows requirements
       ${winetricks}/bin/winetricks -q dotnet452
       ${winetricks}/bin/winetricks -q win10
       ${winetricks}/bin/winetricks -q msxml4 msxml6
       ${winetricks}/bin/winetricks -q vcrun2017
       ${winetricks}/bin/winetricks -q atmlib gdiplus
-
-      # Create directories
-      mkdir -p "$WINEPREFIX/drive_c/users/$USER/Downloads"
-      mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Local/Autodesk/Neutron Platform/Options"
-      mkdir -p "$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Autodesk/Neutron Platform/Options"
 
       # Copy and install WebView2
       cp ${webview2Installer} "$WINEPREFIX/drive_c/users/$USER/Downloads/WebView2installer.exe"
@@ -78,8 +115,7 @@ in
 
       # Copy and install Fusion 360
       cp ${src} "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe"
-      cd "$WINEPREFIX/drive_c/users/$USER/Downloads"
-      ${winePackage}/bin/wine64 Fusion360installer.exe --quiet
+      ${winePackage}/bin/wine64 "$WINEPREFIX/drive_c/users/$USER/Downloads/Fusion360installer.exe" --quiet
 
       # Configure DLL overrides
       ${winePackage}/bin/wine reg add "HKCU\\Software\\Wine\\DllOverrides" /v "adpclientservice.exe" /t REG_SZ /d "" /f
@@ -90,26 +126,7 @@ in
     '';
 
     winAppRun = ''
-      # Set environment variables
-      export WINEARCH=win64
-      export WINEDLLOVERRIDES="winemenubuilder.exe=d;mscoree=d"
-      export DXVK_LOG_LEVEL=none
-      export DXVK_HUD=0
-
-      # Find and launch Fusion 360
-      FUSION_EXE=$(find "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/" -name "*.exe" -type f | head -1)
-      if [ -n "$FUSION_EXE" ]; then
-        exec ${winePackage}/bin/wine64 "$FUSION_EXE" "$@"
-      else
-        echo "Error: Fusion 360 executable not found"
-        exit 1
-      fi
-    '';
-
-    preWineInit = ''
-      # Ensure clean prefix
-      rm -rf "$WINEPREFIX"
-      mkdir -p "$WINEPREFIX"
+      exec "${launcherScript}" "$@"
     '';
 
     installPhase = ''
@@ -118,14 +135,8 @@ in
       mkdir -p $out/bin
       mkdir -p $out/share/applications
 
-      # Create wrapper script
-      makeWrapper ${winePackage}/bin/wine64 $out/bin/${pname} \
-        --set WINEARCH "win64" \
-        --set WINEPREFIX "$HOME/.local/share/fusion360/prefix" \
-        --set WINEDLLOVERRIDES "winemenubuilder.exe=d;mscoree=d" \
-        --set DXVK_LOG_LEVEL "none" \
-        --set DXVK_HUD "0" \
-        --add-flags "$WINEPREFIX/drive_c/Program Files/Autodesk/webdeploy/production/*.exe"
+      # Install launcher script
+      install -Dm755 ${launcherScript} $out/bin/${pname}
 
       # Copy desktop files and icons
       copyDesktopItems
