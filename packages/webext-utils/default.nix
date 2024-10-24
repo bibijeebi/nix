@@ -2,12 +2,15 @@
 {
   lib,
   stdenv,
-  writeText,
+  buildEnv,
+  writeShellScriptBin,
+  fetchurl,
   jq,
+  unzip,
   zip,
-  crx3-utils, # We'll need to add this as a dependency
+  crx3-utils,
 }: let
-  # Keep existing makeExtensionId function
+  # Function to generate Chrome-compatible extension ID from a hash
   makeExtensionId = hash: let
     base16ToBase16Limited = c:
       if c == "0"
@@ -46,34 +49,51 @@
   in
     lib.concatStrings (map base16ToBase16Limited (lib.stringToCharacters (builtins.substring 0 32 hash)));
 
-  # New function to validate manifest.json
-in {
-  buildChromeExtension = {
-    pname,
-    version,
-    src,
+  # Base builder for Chrome extensions
+  buildChromeExtension = a @ {
+    name ? "",
     manifestOverrides ? {},
-    buildInputs ? [],
+    chromeExtId ? null, # Can be provided for known extensions
+    chromeExtPublisher ? null,
+    chromeExtName ? null,
+    configurePhase ? ''
+      runHook preConfigure
+      runHook postConfigure
+    '',
+    buildPhase ? ''
+      runHook preBuild
+      runHook postBuild
+    '',
+    dontStrip ? true,
     nativeBuildInputs ? [],
-    postPatch ? "",
-    meta ? {},
+    passthru ? {},
     ...
-  } @ attrs: let
-    extensionId = makeExtensionId (builtins.hashString "sha256" "${pname}-${version}");
-
-    extension = stdenv.mkDerivation (attrs
+  }:
+    stdenv.mkDerivation (a
       // {
-        inherit pname version src meta;
+        name = "chrome-extension-${name}";
 
-        nativeBuildInputs = [jq zip crx3-utils] ++ nativeBuildInputs;
-        buildInputs = buildInputs;
+        passthru =
+          passthru
+          // {
+            inherit chromeExtPublisher chromeExtName;
+            extensionId =
+              if chromeExtId != null
+              then chromeExtId
+              else makeExtensionId (builtins.hashString "sha256" "${name}-${a.version}");
+          };
+
+        inherit configurePhase buildPhase dontStrip;
+
+        nativeBuildInputs = [jq unzip zip crx3-utils] ++ nativeBuildInputs;
 
         patchPhase = ''
           runHook prePatch
 
-          # Read and validate manifest
+          # Validate and patch manifest.json
           if [ -f "manifest.json" ]; then
             manifest=$(cat manifest.json)
+
             # Apply any overrides
             ${lib.concatStringsSep "\n" (lib.mapAttrsToList (k: v: ''
               manifest=$(echo "$manifest" | jq '. + {"${k}": ${builtins.toJSON v}}')
@@ -82,15 +102,12 @@ in {
 
             # Ensure the manifest is valid
             echo "$manifest" | jq 'empty'
-
-            # Write back the modified manifest
             echo "$manifest" > manifest.json
           else
             echo "No manifest.json found"
             exit 1
           fi
 
-          ${postPatch}
           runHook postPatch
         '';
 
@@ -109,49 +126,136 @@ in {
         installPhase = ''
           runHook preInstall
 
-          # Install the extension files
-          mkdir -p $out/share/chrome-extensions/${extensionId}
-          cp -r . $out/share/chrome-extensions/${extensionId}/
+          # Create extension directory
+          mkdir -p $out/share/chrome-extensions
 
-          # Install the packaged extensions
-          cp extension.zip $out/share/chrome-extensions/${extensionId}.zip
-          cp extension.crx $out/share/chrome-extensions/${extensionId}.crx
+          # Install the extension files
+          cp -r . $out/share/chrome-extensions/unpacked
+          cp extension.zip $out/share/chrome-extensions/extension.zip
+          cp extension.crx $out/share/chrome-extensions/extension.crx
+
+          # Create update manifest
+          cat > $out/share/chrome-extensions/update.xml << EOF
+          <?xml version='1.0' encoding='UTF-8'?>
+          <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
+            <app appid='${passthru.extensionId}'>
+              <updatecheck
+                codebase="file://$out/share/chrome-extensions/extension.crx"
+                version="${a.version}"
+                prodversionmin="${lib.versions.majorMinor a.version}"
+              />
+            </app>
+          </gupdate>
+          EOF
 
           runHook postInstall
         '';
-
-        passthru = {
-          inherit extensionId;
-
-          # Generate the update manifest XML
-          updateManifest = writeText "update-manifest.xml" ''
-            <?xml version='1.0' encoding='UTF-8'?>
-            <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
-              <app appid='${extensionId}'>
-                <updatecheck
-                  codebase="file://${extension}/share/chrome-extensions/${extensionId}.crx"
-                  version="${version}"
-                  prodversionmin="${lib.versions.majorMinor version}"
-                />
-              </app>
-            </gupdate>
-          '';
-
-          # The string to use in chromium.extensions
-          extensionString = "${extensionId};file://${extension.updateManifest}";
-        };
       });
-  in
-    extension;
 
-  # Helper function to fetch extension from Chrome Web Store
-  fetchChromeExtension = {
+  # Fetch extension CRX from Chrome Web Store
+  fetchCrxFromChromeStore = {
+    id,
+    version,
+    sha256,
+  }:
+    fetchurl {
+      url =
+        "https://clients2.google.com/service/update2/crx?response=redirect&acceptformat=crx3"
+        + "&prodversion=${version}&x=id%3D${id}%26installsource%3Dondemand%26uc";
+      inherit sha256;
+      name = "chrome-extension-${id}.crx";
+    };
+
+  # Build extension from Chrome Web Store reference
+  buildChromeStoreExtension = a @ {
+    name ? "",
+    src ? null,
+    crx ? null,
+    storeRef,
     ...
   }:
-    throw "Not implemented yet - will fetch from Chrome Web Store";
+    assert "" == name;
+    assert null == src;
+      buildChromeExtension (
+        (removeAttrs a ["storeRef" "crx"])
+        // {
+          name = "${storeRef.id}-${storeRef.version}";
+          version = storeRef.version;
+          src =
+            if (crx != null)
+            then crx
+            else fetchCrxFromChromeStore storeRef;
+          chromeExtId = storeRef.id;
+        }
+      );
 
-  # Helper to convert Chrome Web Store extensions to Nix
+  # Helper functions for store extensions
+  storeRefAttrList = [
+    "id"
+    "version"
+    "sha256"
+    "publisher"
+    "name"
+  ];
+
+  storeExtRefToExtDrv = ext:
+    buildChromeStoreExtension (
+      removeAttrs ext storeRefAttrList
+      // {
+        storeRef = builtins.intersectAttrs (lib.genAttrs storeRefAttrList (_: null)) ext;
+      }
+    );
+
+  extensionFromChromeStore = storeExtRefToExtDrv;
+  extensionsFromChromeStore = storeRefList:
+    builtins.map extensionFromChromeStore storeRefList;
+
+  # Helper to generate extension metadata for Chrome
+  toExtensionJsonEntry = ext: {
+    id = ext.extensionId;
+    version = ext.version;
+    location = ext.outPath + "/share/chrome-extensions/extension.crx";
+    updateUrl = "file://${ext.outPath}/share/chrome-extensions/update.xml";
+  };
+
+  toExtensionJson = extensions:
+    builtins.toJSON (map toExtensionJsonEntry extensions);
+
+  # Helper to convert Chrome Store extensions to Nix expressions
   chromeExts2nix = {
   }:
-    throw "Not implemented yet - will generate Nix expressions from extension IDs";
+    writeShellScriptBin "chrome-exts-2-nix" ''
+      #!${stdenv.shell}
+
+      # TODO: Implement scraping of Chrome Web Store
+      # This would need to:
+      # 1. Fetch extension metadata from store
+      # 2. Generate Nix expressions
+      # 3. Save to outputFile
+      echo "Not implemented yet"
+      exit 1
+    '';
+
+  # Environment builder for Chrome with extensions
+  chromeEnv = import ./chromeEnv.nix {
+    inherit
+      lib
+      buildEnv
+      writeShellScriptBin
+      extensionsFromChromeStore
+      jq
+      ;
+  };
+in {
+  inherit
+    buildChromeExtension
+    buildChromeStoreExtension
+    fetchCrxFromChromeStore
+    extensionFromChromeStore
+    extensionsFromChromeStore
+    chromeExts2nix
+    chromeEnv
+    toExtensionJsonEntry
+    toExtensionJson
+    ;
 }
