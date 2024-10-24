@@ -50,6 +50,8 @@
 
   buildChromeExtension = a @ {
     name ? "",
+    pname ? name,
+    version,
     src,
     manifestOverrides ? {},
     chromeExtId ? null,
@@ -58,19 +60,21 @@
     nativeBuildInputs ? [],
     passthru ? {},
     ...
-  }:
+  }: let
+    extensionId =
+      if chromeExtId != null
+      then chromeExtId
+      else makeExtensionId (builtins.hashString "sha256" "${name}-${version}");
+  in
     stdenv.mkDerivation (removeAttrs a ["manifestOverrides" "chromeExtId" "chromeExtPublisher" "chromeExtName"]
       // {
-        name = "chrome-extension-${name}";
+        inherit pname version src;
+        name = "chrome-extension-${pname}-${version}";
 
         passthru =
           passthru
           // {
-            inherit chromeExtPublisher chromeExtName;
-            extensionId =
-              if chromeExtId != null
-              then chromeExtId
-              else makeExtensionId (builtins.hashString "sha256" "${name}-${a.version}");
+            inherit extensionId chromeExtPublisher chromeExtName;
           };
 
         nativeBuildInputs = [jq unzip zip nodejs] ++ nativeBuildInputs;
@@ -110,11 +114,11 @@
           cat > $out/share/chrome-extensions/update.xml << EOF
           <?xml version='1.0' encoding='UTF-8'?>
           <gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'>
-            <app appid='${passthru.extensionId}'>
+            <app appid='${extensionId}'>
               <updatecheck
                 codebase="file://$out/share/chrome-extensions/extension.zip"
-                version="${a.version}"
-                prodversionmin="${lib.versions.majorMinor a.version}"
+                version="${version}"
+                prodversionmin="${lib.versions.majorMinor version}"
               />
             </app>
           </gupdate>

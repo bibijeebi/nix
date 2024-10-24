@@ -2,27 +2,18 @@
 {
   lib,
   internal,
-  nodejs,
 }:
 internal.webext-utils.buildChromeExtension {
-  pname = "altdown";
+  pname = "altdown"; # Changed from name to pname for consistency
+  name = "altdown"; # Still need name for the extension ID generation
   version = "1.0.0";
   src = ./.;
 
   # Optional: Override manifest values
   manifestOverrides = {
-    description = "Enhanced alt text downloader extension";
+    description = "Alt text downloader extension";
     permissions = ["activeTab" "downloads"];
   };
-
-  # Optional: Add build-time dependencies
-  buildInputs = [nodejs];
-
-  # Optional: Add post-patch modifications
-  postPatch = ''
-    # Example: Modify some source files if needed
-    sed -i 's/DEBUG = true/DEBUG = false/' images.js
-  '';
 
   meta = with lib; {
     description = "Alt text downloader extension";
