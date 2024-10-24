@@ -27,19 +27,24 @@
     chromium = {
       enable = true;
       package = pkgs.google-chrome;
-      extensions = {
-        "cjpalhdlnbpafiamejdnhcphjbkeiagm" = {
-          id = "cjpalhdlnbpafiamejdnhcphjbkeiagm";
-          updateUrl = "https://clients2.google.com/service/update2/crx";
-        };
-        "eimadpbcbfnmbkopoojfekhnkhdbieeh" = {
-          id = "eimadpbcbfnmbkopoojfekhnkhdbieeh";
-          updateUrl = "https://clients2.google.com/service/update2/crx";
-        };
-      };
       commandLineArgs = [
-        "--disable-features=DownloadBubble,BookmarkBar"
-        "--disable-session-crashed-bubble"
+        # UI and Appearance
+        "--force-dark-mode"
+        "--enable-features=WebUIDarkMode"
+        "--start-maximized"
+        "--hide-scrollbars"
+
+        # Disable Annoying UI Elements
+        "--disable-features=DownloadBubble,DownloadBubbleV2,DesktopPWAsRunOnOsLogin,WebUITabStrip,SessionCrashedBubble"
+        "--disable-notifications"
+        "--disable-infobars"
+
+        # Performance & Security
+        "--disable-features=site-per-process"
+        "--disable-background-timer-throttling"
+
+        # Memory optimization
+        "--disk-cache-size=104857600" # 100MB cache
       ];
     };
 
@@ -50,11 +55,11 @@
       vimAlias = true;
       vimdiffAlias = true;
       plugins = with pkgs.vimPlugins; [
-        nvim-lspconfig # Language server protocol
-        nvim-treesitter.withAllGrammars # Syntax highlighting
-        plenary-nvim # Lua functions library
-        gruvbox-material # Color scheme
-        mini-nvim # Collection of minimal plugins
+        nvim-lspconfig
+        nvim-treesitter.withAllGrammars
+        plenary-nvim
+        gruvbox-material
+        mini-nvim
       ];
     };
 
