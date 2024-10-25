@@ -58,11 +58,6 @@
           name = "fish-you-should-use";
           src = pkgs.fishPlugins.fish-you-should-use.src;
         }
-        # Colored man pages
-        {
-          name = "colored-man-pages";
-          src = pkgs.fishPlugins.colored-man-pages.src;
-        }
         # Notifications when long processes finish
         {
           name = "done";
