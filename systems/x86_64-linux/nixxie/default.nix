@@ -295,94 +295,90 @@ in {
 
   # System Packages
   environment.systemPackages = with pkgs; [
-    # Development Tools
-    aichat
-    code-cursor
-    gcc
     (hiPrio parallel)
-
-    # Programming Languages & Tools
-    black
-    cabal-install
-    ghc
-
-    haskell-language-server
-    isort
-    stack
-
-    # System Tools
-    curl
-    kmod
-    pciutils
-    wget
-
-    # Security Tools
-    burpsuite
-    exploitdb
-    ghidra-bin
-    hashcat
-    john
-    metasploit
-    nmap
-    sqlmap
-
-    # Media Tools
-    ffmpeg
-    grim
-    imagemagick
-    qimgv
-    realesrgan-ncnn-vulkan
-    slurp
-
-    # Virtualization
-    libvirt
-    qemu
-    quickemu
-    swtpm
-    (pkgs.writeShellScriptBin "qemu-system-x86_64-uefi" ''
-      qemu-system-x86_64 \
-        -bios ${pkgs.OVMF.fd}/FV/OVMF.fd \
-        "$@"
-    '')
-
-    # Applications
+    aichat
     alejandra
     android-tools
     anki
     apktool
-    jadx
-    obsidian
-    powershell
-    veracrypt
-
-    # Other Utilities
+    bc
+    bindfs
+    black
+    bottles
+    burpsuite
+    cabal-fmt
+    cabal-install
+    cabextract
+    code-cursor
+    curl
+    deadnix
+    exploitdb
+    fclones
+    ffmpeg
     file
+    fuse
+    gcc
+    ghc
+    ghidra-bin
     glow
+    grim
+    hashcat
+    haskell-language-server
+    hyprshot
+    imagemagick
     internal.assemblyai-cli
+    isort
+    jadx
+    john
     jsbeautifier
+    kmod
+    libvirt
+    literate
     mako
+    manix
+    metasploit
     moreutils
+    nix-init
+    nix-output-monitor
+    nmap
+    nodejs
+    obsidian
     openvpn
+    ormolu
     pavucontrol
+    pciutils
+    polkit
     poppler_utils
+    powershell
+    pre-commit
+    qemu
+    qimgv
+    quickemu
+    realesrgan-ncnn-vulkan
+    slurp
     snowfallorg.flake
     socat
+    spacenavd
+    sqlmap
+    stack
     stegseek
+    swtpm
     texliveTeTeX
+    thunar
+    unionfs-fuse
     unixtools.xxd
     unzip
     uv
     vdhcoapp
+    veracrypt
+    vscode
+    wget
+    wine
+    winetricks
+    wineWowPackages.waylandFull
     wl-clipboard
     wordlists
+    xdg-utils
     zip
-
-    fuse
-    unionfs-fuse
-    bindfs
-    wineWowPackages.waylandFull
-
-    bottles
-    winetricks
   ];
 }
