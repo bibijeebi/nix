@@ -27,13 +27,20 @@
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
       src = ./.;
+
       channels-config.allowUnfree = true;
+
       systems.modules.nixos = with inputs; [
         home-manager.nixosModules.home-manager
         nixarr.nixosModules.default
       ];
+
       overlays = with inputs; [
         snowfall-flake.overlays."package/flake"
       ];
+
+      outputs-builder = channels: {
+        formatter = channels.nixpkgs.alejandra;
+      };
     };
 }

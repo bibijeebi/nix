@@ -37,43 +37,38 @@
       interactiveShellInit = "set fish_greeting";
       shellInitLast = "zoxide init fish | source";
       shellAliases = {
+        ai = "aichat";
         clp = "wl-copy";
+        cls = "clear";
         pst = "wl-paste";
         t = "task";
         ya = "yazi";
       };
       plugins = [
-        # Efficient directory jumping (since you're using zoxide)
         {
           name = "z";
           src = pkgs.fishPlugins.z.src;
         }
-        # Auto-complete matching pairs (parentheses, quotes, etc.)
         {
           name = "autopair";
           src = pkgs.fishPlugins.autopair.src;
         }
-        # Reminds you when you have an alias for a command
         {
           name = "fish-you-should-use";
           src = pkgs.fishPlugins.fish-you-should-use.src;
         }
-        # Notifications when long processes finish
         {
           name = "done";
           src = pkgs.fishPlugins.done.src;
         }
-        # Enhanced fzf integration
         {
           name = "fzf-fish";
           src = pkgs.fishPlugins.fzf-fish.src;
         }
-        # Git abbreviations
         {
           name = "git-abbr";
           src = pkgs.fishPlugins.git-abbr.src;
         }
-        # Clean command history (removes typos, etc.)
         {
           name = "sponge";
           src = pkgs.fishPlugins.sponge.src;
@@ -89,23 +84,9 @@
       enable = true;
       package = pkgs.google-chrome;
       commandLineArgs = [
-        # UI and Appearance
-        "--force-dark-mode"
-        "--enable-features=WebUIDarkMode"
-        "--start-maximized"
         "--hide-scrollbars"
-
-        # Disable Annoying UI Elements
-        "--disable-features=DownloadBubble,DownloadBubbleV2,DesktopPWAsRunOnOsLogin,WebUITabStrip,SessionCrashedBubble"
         "--disable-notifications"
-        "--disable-infobars"
-
-        # Performance & Security
-        "--disable-features=site-per-process"
-        "--disable-background-timer-throttling"
-
-        # Memory optimization
-        "--disk-cache-size=104857600" # 100MB cache
+        "--disable-features=DownloadBubble"
       ];
     };
 
@@ -140,35 +121,25 @@
       };
     };
 
-    # File Navigation and Search
-    fd.enable = true; # Alternative to find
-    fzf.enable = true; # Fuzzy finder
-    ripgrep.enable = true; # Fast grep
-    zoxide.enable = true; # Smarter cd
-    yazi.enable = true; # Terminal file manager
-
-    # File Viewing and Processing
-    bat.enable = true; # Better cat
-    eza.enable = true; # Better ls
-    jq.enable = true; # JSON processor
-    pandoc.enable = true; # Document converter
-
-    # System Monitoring
-    htop.enable = true; # Process viewer
-
-    # Development Tools
-    gh.enable = true; # GitHub CLI
-    gpg.enable = true; # Encryption
-    tmux.enable = true; # Terminal multiplexer
-
-    # Media Tools
-    gallery-dl.enable = true; # Image downloader
-    mpv.enable = true; # Media player
-    yt-dlp.enable = true; # Video downloader
-
-    # Productivity
-    firefox.enable = true; # Web browser
-    taskwarrior.enable = true; # Task management
+    bat.enable = true;
+    btop.enable = true;
+    eza.enable = true;
+    fd.enable = true;
+    firefox.enable = true;
+    fzf.enable = true;
+    gallery-dl.enable = true;
+    gh.enable = true;
+    gpg.enable = true;
+    htop.enable = true;
+    jq.enable = true;
+    mpv.enable = true;
+    pandoc.enable = true;
+    ripgrep.enable = true;
+    taskwarrior.enable = true;
+    tmux.enable = true;
+    yazi.enable = true;
+    yt-dlp.enable = true;
+    zoxide.enable = true;
   };
 
   # In your home-manager configuration
@@ -198,7 +169,7 @@
       modifier = "Mod4";
       terminal = "kitty";
       startup = [
-        {command = "firefox";}
+        {command = "cursor ~/nix";}
       ];
     };
   };
@@ -224,7 +195,4 @@
       };
     };
   };
-
-  # System Services
-  services.cliphist.enable = true; # Clipboard manager
 }

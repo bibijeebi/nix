@@ -2,6 +2,8 @@
   lib,
   config,
   pkgs,
+  inputs,
+  channels,
   ...
 }: let
   locale = "en_US.UTF-8";
@@ -306,7 +308,6 @@ in {
     black
     bottles
     burpsuite
-    cabal-fmt
     cabal-install
     cabextract
     code-cursor
@@ -326,7 +327,6 @@ in {
     haskell-language-server
     hyprshot
     imagemagick
-    internal.assemblyai-cli
     isort
     jadx
     john
@@ -364,7 +364,7 @@ in {
     stegseek
     swtpm
     texliveTeTeX
-    thunar
+    xfce.thunar
     unionfs-fuse
     unixtools.xxd
     unzip
