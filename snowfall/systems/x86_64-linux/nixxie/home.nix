@@ -126,111 +126,10 @@
   # Theming
   fonts.fontconfig.enable = true;
 
-  wayland.windowManager.sway = {
-    enable = true;
-    config = rec {
-      modifier = "Mod4";
-
-      # Use better terminal emulator
-      terminal = "kitty";
-
-      # Use wofi as launcher
-      menu = "wofi --show drun";
-
-      # Input configuration
-      input = {
-        "type:pointer" = {
-          accel_profile = "flat";
-          pointer_accel = "0";
-        };
-      };
-
-      # Gaps and borders
-      gaps = {
-        inner = 5;
-        outer = 3;
-      };
-
-      floating = {
-        modifier = "${modifier}";
-        border = 2;
-      };
-
-      # Custom keybindings
-      keybindings = let
-        modifier = config.wayland.windowManager.sway.config.modifier;
-      in {
-        # Basics
-        "${modifier}+Return" = "exec ${terminal}";
-        "${modifier}+q" = "kill";
-        "${modifier}+d" = "exec ${menu}";
-        "${modifier}+Shift+c" = "reload";
-        "${modifier}+Shift+e" = "exec swaynag -t warning -m 'Exit?' -b 'Yes' 'swaymsg exit'";
-
-        # Screenshots
-        "Print" = "exec grim ~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png";
-        "${modifier}+Print" = "exec grim -g \"$(slurp)\" ~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png";
-
-        # Media keys
-        "XF86AudioRaiseVolume" = "exec pamixer -i 5";
-        "XF86AudioLowerVolume" = "exec pamixer -d 5";
-        "XF86AudioMute" = "exec pamixer -t";
-        "XF86AudioMicMute" = "exec pamixer --default-source -t";
-        "XF86MonBrightnessUp" = "exec light -A 5";
-        "XF86MonBrightnessDown" = "exec light -U 5";
-        "XF86AudioPlay" = "exec playerctl play-pause";
-        "XF86AudioNext" = "exec playerctl next";
-        "XF86AudioPrev" = "exec playerctl previous";
-
-        # Layout
-        "${modifier}+b" = "splith";
-        "${modifier}+v" = "splitv";
-        "${modifier}+f" = "fullscreen";
-        "${modifier}+space" = "floating toggle";
-        "${modifier}+s" = "layout stacking";
-        "${modifier}+w" = "layout tabbed";
-        "${modifier}+e" = "layout toggle split";
-      };
-
-      # Startup applications
-      startup = [
-        {command = "mako";}
-        {command = "waybar";}
-        {command = "kanshi";}
-        {
-          command = ''
-            swayidle -w \
-              timeout 300 'swaylock -f -c 000000' \
-              timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
-              before-sleep 'swaylock -f -c 000000'
-          '';
-        }
-      ];
-
-      # Status bar configuration using waybar
-      bars = []; # We'll use waybar instead of the default bar
-    };
-
-    # Extra configurations
-    extraConfig = ''
-      # Focus follows mouse
-      focus_follows_mouse yes
-
-      # Hide cursor when typing
-      seat * hide_cursor when-typing enable
-
-      # Use borders to help identify focused windows
-      default_border pixel 2
-      client.focused #88c0d0 #88c0d0 #ffffff
-      client.unfocused #2e3440 #2e3440 #888888
-    '';
-  };
-
   # Waybar configuration
   programs.waybar = {
     enable = true;
     systemd.enable = true;
-    style = ""; # Add your custom CSS
     settings = {
       mainBar = {
         layer = "top";
@@ -414,7 +313,6 @@
 
       # Startup applications
       exec-once = [
-        "waybar"
         "dunst"
         "swww init"
         "nm-applet --indicator"

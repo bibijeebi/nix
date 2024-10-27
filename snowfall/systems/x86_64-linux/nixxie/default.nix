@@ -83,10 +83,6 @@ in {
   # Desktop Environment & Display
   programs = {
     # Window Managers
-    sway = {
-      enable = true;
-      xwayland.enable = true;
-    };
     hyprland = {
       enable = true;
       xwayland.enable = true;
