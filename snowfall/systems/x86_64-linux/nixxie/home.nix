@@ -1,5 +1,5 @@
 {pkgs, ...}: {
-  home.stateVersion = "24.05";
+  home.stateVersion = "24.11";
 
   # Environment Variables
   home.sessionVariables = {
@@ -67,7 +67,7 @@
         # Utilities
         {
           name = "fish-you-should-use";
-          src = pkgs.unstable.fishPlugins.fish-you-should-use.src;
+          src = pkgs.fishPlugins.fish-you-should-use.src;
         }
         {
           name = "done";
@@ -84,7 +84,7 @@
     # Terminal
     kitty = {
       enable = true;
-      theme = "Catppuccin-Mocha";
+      themeFile = "Catppuccin-Mocha";
       font = {
         package = pkgs.nerdfonts;
         name = "CaskaydiaCove Nerd Font";

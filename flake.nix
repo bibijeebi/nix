@@ -1,8 +1,7 @@
 {
   inputs = {
     # Core
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
-    unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # Framework
     snowfall-lib = {
@@ -11,12 +10,12 @@
     };
     snowfall-flake = {
       url = "github:snowfallorg/flake";
-      inputs.nixpkgs.follows = "unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # System Management
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.05";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -40,5 +39,16 @@
       overlays = with inputs; [
         snowfall-flake.overlays."package/flake"
       ];
+
+      alias = {
+        shells.default = "default";
+      };
+
+      outputs-builder = channels: {
+        formatter = channels.nixpkgs.alejandra;
+        devShells.default = channels.nixpkgs.callPackage ./snowfall/shell.nix {
+          inherit channels;
+        };
+      };
     };
 }

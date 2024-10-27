@@ -4,8 +4,7 @@ in {
   imports = [./hardware.nix];
 
   # Core System Configuration
-  system.stateVersion = "24.05";
-  nixpkgs.config.allowUnfree = true;
+  system.stateVersion = "24.11";
   time.timeZone = "America/New_York";
 
   # Nix Configuration
@@ -42,10 +41,8 @@ in {
 
   hardware = {
     pulseaudio.enable = false;
-    opengl = {
+    graphics = {
       enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
     };
   };
 
@@ -253,6 +250,7 @@ in {
   # System Packages
   environment.systemPackages = with pkgs; [
     (hiPrio parallel)
+    aichat
     alacritty
     alejandra
     android-tools
@@ -261,10 +259,13 @@ in {
     bc
     bindfs
     black
+    bottles
     btop
+    burpsuite
     cabal-install
     cabextract
     cargo
+    code-cursor
     coreutils
     curl
     deadnix
@@ -291,6 +292,7 @@ in {
     jsbeautifier
     kmod
     libvirt
+    literate
     lsb-release
     mako
     manix
@@ -298,6 +300,7 @@ in {
     mokutil
     moreutils
     mpv
+    neovim
     nix-init
     nix-output-monitor
     nmap
@@ -333,14 +336,8 @@ in {
     tmux
     unionfs-fuse
     unixtools.xxd
-    unstable.aichat
-    unstable.bottles
-    unstable.burpsuite
-    unstable.code-cursor
-    unstable.literate
-    unstable.neovim
-    unstable.uv
     unzip
+    uv
     vdhcoapp
     veracrypt
     viu
