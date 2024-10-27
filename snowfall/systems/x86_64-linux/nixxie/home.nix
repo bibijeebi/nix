@@ -137,33 +137,8 @@
       # Use wofi as launcher
       menu = "wofi --show drun";
 
-      # Cursor and font settings for HiDPI
-      output = {
-        "*" = {
-          bg = "~/wallpapers/current fill";
-        };
-        # Example for HiDPI display
-        "eDP-1" = {
-          scale = "1.5";
-        };
-      };
-
       # Input configuration
       input = {
-        "type:keyboard" = {
-          xkb_layout = "us,ru";
-          xkb_options = "grp:alt_shift_toggle,caps:escape";
-          repeat_delay = "300";
-          repeat_rate = "30";
-        };
-
-        "type:touchpad" = {
-          tap = "enabled";
-          natural_scroll = "enabled";
-          middle_emulation = "enabled";
-          dwt = "enabled";
-        };
-
         "type:pointer" = {
           accel_profile = "flat";
           pointer_accel = "0";
@@ -304,14 +279,7 @@
 
       # Input configuration
       input = {
-        kb_layout = "us,ru";
-        kb_options = "grp:alt_shift_toggle";
-        follow_mouse = 1;
-        touchpad = {
-          natural_scroll = true;
-          tap-to-click = true;
-          drag_lock = true;
-        };
+        follow_mouse = 0;
         sensitivity = 0;
       };
 
