@@ -71,12 +71,20 @@ in {
       ]);
   };
 
+  console.useXkbConfig = true;
+  services.xserver.xkb = {
+    layout = "us";
+    options = "caps:escape,terminate:ctrl_alt_bksp";
+  };
+
+  # Ensure KMSCon uses the same XKB config (useful for virtual consoles)
+  services.kmscon.useXkbConfig = true;
+
   # Desktop Environment & Display
   programs = {
     # Window Managers
     sway = {
       enable = true;
-      wrapperFeatures.gtk = true;
       xwayland.enable = true;
     };
     hyprland = {

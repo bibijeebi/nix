@@ -127,7 +127,7 @@
     # Sway
     sway = {
       enable = true;
-      config = rec {
+      config = {
         modifier = "Mod4";
         terminal = "kitty";
         startup = [
