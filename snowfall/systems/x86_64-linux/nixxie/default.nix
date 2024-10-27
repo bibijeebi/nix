@@ -163,6 +163,14 @@ in {
     polkit.enable = true;
     sudo.wheelNeedsPassword = false;
     pam.services.login.enableGnomeKeyring = true;
+    pam.loginLimits = [
+      {
+        domain = "@users";
+        item = "rtprio";
+        type = "-";
+        value = 1;
+      }
+    ];
     wrappers = {
       fusermount = {
         source = "${pkgs.fuse}/bin/fusermount";
@@ -216,6 +224,11 @@ in {
     docker.enable = true;
   };
 
+  xdg.portal = {
+    enable = true;
+    extraPortals = [pkgs.xdg-desktop-portal-hyprland];
+  };
+
   # User Management
   users.users.bibi = {
     isNormalUser = true;
@@ -224,6 +237,8 @@ in {
       "networkmanager"
       "wheel"
       "audio"
+      "video"
+      "input"
       "libvirtd"
       "docker"
       "fuse"
@@ -267,7 +282,9 @@ in {
     bc
     bindfs
     black
+    blueman
     bottles
+    brightnessctl
     btop
     burpsuite
     cabal-install
@@ -277,6 +294,7 @@ in {
     coreutils
     curl
     deadnix
+    dunst
     emacs
     exploitdb
     fclones
@@ -299,8 +317,10 @@ in {
     jadx
     john
     jsbeautifier
+    kanshi
     kmod
     libvirt
+    light
     literate
     lsb-release
     mako
@@ -310,6 +330,7 @@ in {
     moreutils
     mpv
     neovim
+    networkmanagerapplet
     nix-init
     nix-output-monitor
     nmap
@@ -317,9 +338,11 @@ in {
     obsidian
     openvpn
     ormolu
+    pamixer
     pavucontrol
     pciutils
     pipenv
+    playerctl
     polkit
     poppler_utils
     pre-commit
@@ -329,6 +352,7 @@ in {
     qimgv
     quickemu
     realesrgan-ncnn-vulkan
+    rofi-wayland
     rust-analyzer
     rustc
     shellcheck
@@ -340,7 +364,11 @@ in {
     stack
     stegseek
     sway-contrib.grimshot
+    swayidle
+    swaylock
+    swaylock-effects
     swtpm
+    swww
     texliveTeTeX
     tmux
     unionfs-fuse
@@ -351,11 +379,14 @@ in {
     veracrypt
     viu
     vscode
+    waybar
     wget
     wine
     winetricks
     wineWowPackages.waylandFull
     wl-clipboard
+    wlsunset
+    wofi
     wordlists
     xdg-utils
     xfce.thunar

@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  config,
+  pkgs,
+  ...
+}: {
   home.stateVersion = "24.11";
 
   # Environment Variables
@@ -122,26 +126,341 @@
   # Theming
   fonts.fontconfig.enable = true;
 
-  # Window Manager
-  wayland.windowManager = {
-    # Sway
-    sway = {
-      enable = true;
-      config = {
-        modifier = "Mod4";
-        terminal = "kitty";
-        startup = [
-          {command = "cursor ~/nix";}
-        ];
+  wayland.windowManager.sway = {
+    enable = true;
+    config = rec {
+      modifier = "Mod4";
+
+      # Use better terminal emulator
+      terminal = "kitty";
+
+      # Use wofi as launcher
+      menu = "wofi --show drun";
+
+      # Cursor and font settings for HiDPI
+      output = {
+        "*" = {
+          bg = "~/wallpapers/current fill";
+        };
+        # Example for HiDPI display
+        "eDP-1" = {
+          scale = "1.5";
+        };
       };
+
+      # Input configuration
+      input = {
+        "type:keyboard" = {
+          xkb_layout = "us,ru";
+          xkb_options = "grp:alt_shift_toggle,caps:escape";
+          repeat_delay = "300";
+          repeat_rate = "30";
+        };
+
+        "type:touchpad" = {
+          tap = "enabled";
+          natural_scroll = "enabled";
+          middle_emulation = "enabled";
+          dwt = "enabled";
+        };
+
+        "type:pointer" = {
+          accel_profile = "flat";
+          pointer_accel = "0";
+        };
+      };
+
+      # Gaps and borders
+      gaps = {
+        inner = 5;
+        outer = 3;
+      };
+
+      floating = {
+        modifier = "${modifier}";
+        border = 2;
+      };
+
+      # Custom keybindings
+      keybindings = let
+        modifier = config.wayland.windowManager.sway.config.modifier;
+      in {
+        # Basics
+        "${modifier}+Return" = "exec ${terminal}";
+        "${modifier}+q" = "kill";
+        "${modifier}+d" = "exec ${menu}";
+        "${modifier}+Shift+c" = "reload";
+        "${modifier}+Shift+e" = "exec swaynag -t warning -m 'Exit?' -b 'Yes' 'swaymsg exit'";
+
+        # Screenshots
+        "Print" = "exec grim ~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png";
+        "${modifier}+Print" = "exec grim -g \"$(slurp)\" ~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png";
+
+        # Media keys
+        "XF86AudioRaiseVolume" = "exec pamixer -i 5";
+        "XF86AudioLowerVolume" = "exec pamixer -d 5";
+        "XF86AudioMute" = "exec pamixer -t";
+        "XF86AudioMicMute" = "exec pamixer --default-source -t";
+        "XF86MonBrightnessUp" = "exec light -A 5";
+        "XF86MonBrightnessDown" = "exec light -U 5";
+        "XF86AudioPlay" = "exec playerctl play-pause";
+        "XF86AudioNext" = "exec playerctl next";
+        "XF86AudioPrev" = "exec playerctl previous";
+
+        # Layout
+        "${modifier}+b" = "splith";
+        "${modifier}+v" = "splitv";
+        "${modifier}+f" = "fullscreen";
+        "${modifier}+space" = "floating toggle";
+        "${modifier}+s" = "layout stacking";
+        "${modifier}+w" = "layout tabbed";
+        "${modifier}+e" = "layout toggle split";
+      };
+
+      # Startup applications
+      startup = [
+        {command = "mako";}
+        {command = "waybar";}
+        {command = "kanshi";}
+        {
+          command = ''
+            swayidle -w \
+              timeout 300 'swaylock -f -c 000000' \
+              timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
+              before-sleep 'swaylock -f -c 000000'
+          '';
+        }
+      ];
+
+      # Status bar configuration using waybar
+      bars = []; # We'll use waybar instead of the default bar
     };
 
-    # Hyprland
-    hyprland = {
-      enable = true;
-      extraConfig = ''
-        exec-once = "cursor ~/nix"
-      '';
+    # Extra configurations
+    extraConfig = ''
+      # Focus follows mouse
+      focus_follows_mouse yes
+
+      # Hide cursor when typing
+      seat * hide_cursor when-typing enable
+
+      # Use borders to help identify focused windows
+      default_border pixel 2
+      client.focused #88c0d0 #88c0d0 #ffffff
+      client.unfocused #2e3440 #2e3440 #888888
+    '';
+  };
+
+  # Waybar configuration
+  programs.waybar = {
+    enable = true;
+    systemd.enable = true;
+    style = ""; # Add your custom CSS
+    settings = {
+      mainBar = {
+        layer = "top";
+        position = "top";
+        modules-left = ["hyprland/workspaces" "hyprland/mode"];
+        modules-center = ["hyprland/window"];
+        modules-right = ["pulseaudio" "network" "cpu" "memory" "battery" "clock" "tray"];
+      };
+    };
+  };
+
+  gtk = {
+    enable = true;
+    theme = {
+      name = "Adwaita-dark";
+      package = pkgs.adwaita-icon-theme;
+    };
+  };
+
+  qt = {
+    enable = true;
+    platformTheme.name = "gtk";
+  };
+
+  wayland.windowManager.hyprland = {
+    enable = true;
+    systemd.enable = true;
+    settings = {
+      # Monitor configuration
+      monitor = [
+        "eDP-1,1920x1080@60,0x0,1"
+        ",preferred,auto,1" # for any other monitors
+      ];
+
+      # General settings
+      general = {
+        gaps_in = 5;
+        gaps_out = 10;
+        border_size = 2;
+        col = {
+          active_border = "rgba(33ccffee)";
+          inactive_border = "rgba(595959aa)";
+        };
+        layout = "dwindle";
+      };
+
+      # Input configuration
+      input = {
+        kb_layout = "us,ru";
+        kb_options = "grp:alt_shift_toggle";
+        follow_mouse = 1;
+        touchpad = {
+          natural_scroll = true;
+          tap-to-click = true;
+          drag_lock = true;
+        };
+        sensitivity = 0;
+      };
+
+      # Window decoration
+      decoration = {
+        rounding = 10;
+        blur = {
+          enabled = true;
+          size = 3;
+          passes = 1;
+          new_optimizations = true;
+        };
+        drop_shadow = true;
+        shadow_range = 4;
+        shadow_render_power = 3;
+        "col.shadow" = "rgba(1a1a1aee)";
+      };
+
+      # Animations
+      animations = {
+        enabled = true;
+        bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
+        animation = [
+          "windows, 1, 7, myBezier"
+          "windowsOut, 1, 7, default, popin 80%"
+          "border, 1, 10, default"
+          "fade, 1, 7, default"
+          "workspaces, 1, 6, default"
+        ];
+      };
+
+      # Layout
+      dwindle = {
+        pseudotile = true;
+        preserve_split = true;
+      };
+
+      master = {
+        new_is_master = true;
+      };
+
+      # Gestures
+      gestures = {
+        workspace_swipe = true;
+        workspace_swipe_fingers = 3;
+      };
+
+      # Window rules
+      windowrule = [
+        "float,^(pavucontrol)$"
+        "float,^(blueman-manager)$"
+        "float,^(nm-connection-editor)$"
+        "float,title:^(btop)$"
+        "float,title:^(update-sys)$"
+      ];
+
+      # Variables
+      "$mod" = "SUPER";
+      "$terminal" = "kitty";
+      "$menu" = "wofi --show drun";
+      "$volume" = "pamixer";
+      "$brightness" = "brightnessctl";
+
+      # Key bindings
+      bind = [
+        # Basic bindings
+        "$mod, Return, exec, $terminal"
+        "$mod, Q, killactive,"
+        "$mod, M, exit,"
+        "$mod, E, exec, nautilus"
+        "$mod, V, togglefloating,"
+        "$mod, R, exec, $menu"
+        "$mod, P, pseudo,"
+        "$mod, J, togglesplit,"
+
+        # Move focus
+        "$mod, left, movefocus, l"
+        "$mod, right, movefocus, r"
+        "$mod, up, movefocus, u"
+        "$mod, down, movefocus, d"
+
+        # Move windows
+        "$mod SHIFT, left, movewindow, l"
+        "$mod SHIFT, right, movewindow, r"
+        "$mod SHIFT, up, movewindow, u"
+        "$mod SHIFT, down, movewindow, d"
+
+        # Switch workspaces
+        "$mod, 1, workspace, 1"
+        "$mod, 2, workspace, 2"
+        "$mod, 3, workspace, 3"
+        "$mod, 4, workspace, 4"
+        "$mod, 5, workspace, 5"
+        "$mod, 6, workspace, 6"
+        "$mod, 7, workspace, 7"
+        "$mod, 8, workspace, 8"
+        "$mod, 9, workspace, 9"
+        "$mod, 0, workspace, 10"
+
+        # Move windows to workspaces
+        "$mod SHIFT, 1, movetoworkspace, 1"
+        "$mod SHIFT, 2, movetoworkspace, 2"
+        "$mod SHIFT, 3, movetoworkspace, 3"
+        "$mod SHIFT, 4, movetoworkspace, 4"
+        "$mod SHIFT, 5, movetoworkspace, 5"
+        "$mod SHIFT, 6, movetoworkspace, 6"
+        "$mod SHIFT, 7, movetoworkspace, 7"
+        "$mod SHIFT, 8, movetoworkspace, 8"
+        "$mod SHIFT, 9, movetoworkspace, 9"
+        "$mod SHIFT, 0, movetoworkspace, 10"
+
+        # Screenshot bindings
+        ", Print, exec, grim"
+        "SHIFT, Print, exec, grim -g \"$(slurp)\""
+      ];
+
+      # Mouse bindings
+      bindm = [
+        "$mod, mouse:272, movewindow"
+        "$mod, mouse:273, resizewindow"
+        "$mod ALT, mouse:272, resizewindow"
+      ];
+
+      # Media and function keys
+      bindle = [
+        # Volume
+        ", XF86AudioRaiseVolume, exec, $volume -i 5"
+        ", XF86AudioLowerVolume, exec, $volume -d 5"
+        ", XF86AudioMute, exec, $volume -t"
+
+        # Brightness
+        ", XF86MonBrightnessUp, exec, $brightness set +5%"
+        ", XF86MonBrightnessDown, exec, $brightness set 5%-"
+
+        # Media
+        ", XF86AudioPlay, exec, playerctl play-pause"
+        ", XF86AudioNext, exec, playerctl next"
+        ", XF86AudioPrev, exec, playerctl previous"
+      ];
+
+      # Startup applications
+      exec-once = [
+        "waybar"
+        "dunst"
+        "swww init"
+        "nm-applet --indicator"
+        "blueman-applet"
+        "swayidle -w timeout 300 'swaylock -f' timeout 600 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on' before-sleep 'swaylock -f'"
+      ];
     };
   };
 
