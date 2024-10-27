@@ -261,8 +261,8 @@
     settings = {
       # Monitor configuration
       monitor = [
-        "eDP-1,1920x1080@60,0x0,1"
-        ",preferred,auto,1" # for any other monitors
+        "HDMI-A-1,1920x1080@60,0x0,1"
+        ",preferred,auto,1"
       ];
 
       # General settings
@@ -270,10 +270,6 @@
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
-        col = {
-          active_border = "rgba(33ccffee)";
-          inactive_border = "rgba(595959aa)";
-        };
         layout = "dwindle";
       };
 
@@ -315,10 +311,6 @@
       dwindle = {
         pseudotile = true;
         preserve_split = true;
-      };
-
-      master = {
-        new_is_master = true;
       };
 
       # Gestures
