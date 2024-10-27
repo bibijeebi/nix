@@ -1,8 +1,4 @@
-{
-  pkgs,
-  config,
-  ...
-}: {
+{pkgs, ...}: {
   home.stateVersion = "24.05";
 
   # Environment Variables
@@ -71,7 +67,7 @@
         # Utilities
         {
           name = "fish-you-should-use";
-          src = pkgs.fishPlugins.fish-you-should-use.src;
+          src = pkgs.unstable.fishPlugins.fish-you-should-use.src;
         }
         {
           name = "done";
@@ -112,7 +108,6 @@
     htop.enable = true;
     jq.enable = true;
     ripgrep.enable = true;
-    taskwarrior.enable = true;
     tmux.enable = true;
     yazi.enable = true;
     zoxide.enable = true;
@@ -125,23 +120,6 @@
   };
 
   # Theming
-  gtk = {
-    enable = true;
-    theme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome.adwaita-icon-theme;
-    };
-    iconTheme = {
-      name = "Adwaita-dark";
-      package = pkgs.gnome.adwaita-icon-theme;
-    };
-  };
-
-  qt = {
-    enable = true;
-    platformTheme.name = "gtk2";
-  };
-
   fonts.fontconfig.enable = true;
 
   # Window Manager

@@ -29,19 +29,14 @@
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
       src = ./.;
-
-      # Basic configuration
-      snowfall = {
-        root = ./snowfall;
-        namespace = "bibijeebi";
-      };
+      snowfall.root = ./snowfall;
       channels-config.allowUnfree = true;
 
-      # System modules and overlays
       systems.modules.nixos = with inputs; [
         home-manager.nixosModules.home-manager
         nixarr.nixosModules.default
       ];
+
       overlays = with inputs; [
         snowfall-flake.overlays."package/flake"
       ];

@@ -1,11 +1,4 @@
-{
-  lib,
-  config,
-  pkgs,
-  inputs,
-  channels,
-  ...
-}: let
+{pkgs, ...}: let
   locale = "en_US.UTF-8";
 in {
   imports = [./hardware.nix];
@@ -114,21 +107,6 @@ in {
     # System Utilities
     mtr.enable = true;
     xfconf.enable = true;
-    gnupg.agent = {
-      enable = true;
-      enableSSHSupport = true;
-      pinentryPackage = lib.mkForce pkgs.pinentry-gnome3;
-    };
-  };
-
-  # XDG Portal Configuration
-  xdg.portal = {
-    enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-kde
-      xdg-desktop-portal-hyprland
-    ];
-    config.common.default = "*";
   };
 
   # System Services
@@ -248,6 +226,11 @@ in {
     shell = pkgs.fish;
   };
 
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
+  home-manager.users.bibi = import ./home.nix;
+  home-manager.backupFileExtension = "backup";
+
   # Media Server
   nixarr = {
     enable = true;
@@ -269,116 +252,108 @@ in {
 
   # System Packages
   environment.systemPackages = with pkgs; [
-    # Development Tools
-    gcc
-    ghc
-    nodejs
-    cabal-install
-    haskell-language-server
-    stack
-    pre-commit
-    # System Utilities
     (hiPrio parallel)
-    bindfs
-    curl
-    fuse
-    kmod
-    libvirt
-    moreutils
-    pciutils
-    polkit
-    qemu
-    swtpm
-    unionfs-fuse
-    unixtools.xxd
-    wget
-    # Nix Tools
-    alejandra
-    deadnix
-    manix
-    nix-init
-    nix-output-monitor
-    snowfallorg.flake
-    uv
-    # Security Tools
-    burpsuite
-    exploitdb
-    hashcat
-    john
-    metasploit
-    nmap
-    openvpn
-    sqlmap
-    stegseek
-    veracrypt
-    wordlists
-    # Media Tools
-    ffmpeg
-    imagemagick
-    mpv
-    pavucontrol
-    poppler_utils
-    qimgv
-    realesrgan-ncnn-vulkan
-    # Desktop Applications
-    aichat
-    anki
-    code-cursor
-    glow
-    literate
-    obsidian
-    vscode
-    # File Management
-    fclones
-    unzip
-    xfce.thunar
-    zip
-    # Android Development
-    android-tools
-    apktool
-    jadx
-    # Window Manager Tools
-    grim
-    hyprshot
-    mako
-    slurp
-    spacenavd
-    wl-clipboard
-    xdg-utils
-    # Gaming & Compatibility
-    bottles
-    wine
-    winetricks
-    wineWowPackages.waylandFull
-    # Text Processing
-    bc
-    black
-    isort
-    jsbeautifier
-    # Miscellaneous
     alacritty
+    alejandra
+    android-tools
+    anki
+    apktool
+    bc
+    bindfs
+    black
+    btop
+    cabal-install
     cabextract
     cargo
     coreutils
+    curl
+    deadnix
     emacs
+    exploitdb
+    fclones
+    ffmpeg
     foot
+    fuse
+    gcc
+    gh
+    ghc
+    git
+    glow
     gnumake
-    sway-contrib.grimshot
+    grim
+    hashcat
+    haskell-language-server
+    hyprshot
+    imagemagick
+    isort
+    jadx
+    john
+    jsbeautifier
+    kmod
+    libvirt
     lsb-release
+    mako
+    manix
+    metasploit
     mokutil
-    neovim
-    nixfmt-classic
+    moreutils
+    mpv
+    nix-init
+    nix-output-monitor
+    nmap
+    nodejs
+    obsidian
+    openvpn
     ormolu
+    pavucontrol
+    pciutils
     pipenv
+    polkit
+    poppler_utils
+    pre-commit
     pup
     python3
+    qemu
+    qimgv
     quickemu
+    realesrgan-ncnn-vulkan
     rust-analyzer
     rustc
     shellcheck
+    slurp
+    snowfallorg.flake
     socat
+    spacenavd
+    sqlmap
+    stack
+    stegseek
+    sway-contrib.grimshot
+    swtpm
     texliveTeTeX
+    tmux
+    unionfs-fuse
+    unixtools.xxd
+    unstable.aichat
+    unstable.bottles
+    unstable.burpsuite
+    unstable.code-cursor
+    unstable.literate
+    unstable.neovim
+    unstable.uv
+    unzip
     vdhcoapp
+    veracrypt
     viu
+    vscode
+    wget
+    wine
+    winetricks
+    wineWowPackages.waylandFull
+    wl-clipboard
+    wordlists
+    xdg-utils
+    xfce.thunar
+    zip
+    zoxide
   ];
 }
