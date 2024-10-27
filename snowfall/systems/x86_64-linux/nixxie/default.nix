@@ -365,19 +365,17 @@ in {
     jsbeautifier
     # Miscellaneous
     alacritty
-    cabal-fmt
     cabextract
     cargo
     coreutils
-    emacs30
+    emacs
     foot
     gnumake
-    grimshot
+    sway-contrib.grimshot
     lsb-release
     mokutil
     neovim
-    nixfmt
-    nx
+    nixfmt-classic
     ormolu
     pipenv
     pup
@@ -388,7 +386,6 @@ in {
     shellcheck
     socat
     texliveTeTeX
-    tide
     vdhcoapp
     viu
   ];
