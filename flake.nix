@@ -40,10 +40,6 @@
         snowfall-flake.overlays."package/flake"
       ];
 
-      alias = {
-        shells.default = "default";
-      };
-
       outputs-builder = channels: {
         formatter = channels.nixpkgs.alejandra;
         devShells.default = channels.nixpkgs.callPackage ./snowfall/shell.nix {

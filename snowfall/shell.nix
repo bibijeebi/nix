@@ -16,20 +16,20 @@ mkShell {
   # Create your shell
   packages = with pkgs; [
     alejandra
-    btop
-    deadnixc
     direnv
-    gh
     git
+    gh
     inotify-tools
-    manix
-    mdbook
     nix-direnv
     nix-output-monitor
-    pandoc
     parallel
-    pre-commit
+    mdbook
+    pandoc
     shellcheck
+    pre-commit
+    btop
     shfmt
+    manix
+    deadnix
   ];
 }
