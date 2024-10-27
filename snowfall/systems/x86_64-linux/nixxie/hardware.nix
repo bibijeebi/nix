@@ -7,17 +7,29 @@
   modulesPath,
   ...
 }: {
-  imports = [(modulesPath + "/installer/scan/not-detected.nix")];
+  imports = [
+    (modulesPath + "/installer/scan/not-detected.nix")
+  ];
 
+  # Boot Configuration
   boot = {
+    # Kernel Modules
     initrd = {
-      availableKernelModules = ["vmd" "xhci_pci" "ahci" "usbhid" "usb_storage" "sd_mod"];
+      availableKernelModules = [
+        "vmd" # Intel Volume Management Device
+        "xhci_pci" # USB 3.0 Controller
+        "ahci" # SATA Controller
+        "usbhid" # USB HID Devices
+        "usb_storage" # USB Storage
+        "sd_mod" # SD Card Support
+      ];
       kernelModules = [];
     };
-    kernelModules = ["kvm-intel"];
+    kernelModules = ["kvm-intel"]; # Intel KVM Support
     extraModulePackages = [];
   };
 
+  # Storage Configuration
   fileSystems = {
     "/" = {
       device = "/dev/disk/by-uuid/7c780241-0638-42ea-9338-09721aa3852d";
@@ -26,14 +38,20 @@
     "/boot" = {
       device = "/dev/disk/by-uuid/94CD-4B1F";
       fsType = "vfat";
-      options = ["fmask=0077" "dmask=0077"];
+      options = [
+        "fmask=0077" # File permissions mask
+        "dmask=0077" # Directory permissions mask
+      ];
     };
   };
 
-  swapDevices = [];
+  # Memory Configuration
+  swapDevices = []; # No swap configured
 
+  # Network Configuration
   networking.useDHCP = lib.mkDefault true;
 
+  # System Configuration
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

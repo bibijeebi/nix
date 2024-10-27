@@ -10,16 +10,24 @@
 in {
   imports = [./hardware.nix];
 
+  # Core System Configuration
   system.stateVersion = "24.05";
-
   nixpkgs.config.allowUnfree = true;
-
   time.timeZone = "America/New_York";
 
+  # Nix Configuration
   nix = {
     settings = {
       auto-optimise-store = true;
       experimental-features = ["nix-command" "flakes"];
+      substituters = [
+        "https://cache.nixos.org"
+        "https://nix-community.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
     };
     gc = {
       automatic = true;
@@ -28,7 +36,7 @@ in {
     };
   };
 
-  # Boot Configuration
+  # System Boot & Hardware
   boot = {
     supportedFilesystems = ["fuse"];
     kernelModules = ["fuse"];
@@ -39,39 +47,20 @@ in {
     };
   };
 
-  # Networking
+  hardware = {
+    pulseaudio.enable = false;
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+    };
+  };
+
+  # Network Configuration
   networking = {
     hostName = "nixxie";
     networkmanager.enable = true;
   };
-
-  # stylix = {
-  #   enable = true;
-  #   image = pkgs.fetchurl {
-  #     url = "https://www.pixelstalk.net/wp-content/uploads/2016/05/Epic-Anime-Awesome-Wallpapers.jpg";
-  #     sha256 = "enQo3wqhgf0FEPHj2coOCvo7DuZv+x5rL/WIo4qPI50=";
-  #   };
-  #   polarity = "dark";
-  #   base16Scheme = "${pkgs.base16-schemes}/share/themes/catppuccin-mocha.yaml";
-  #   fonts = {
-  #     serif = {
-  #       package = pkgs.dejavu_fonts;
-  #       name = "DejaVu Serif";
-  #     };
-  #     sansSerif = {
-  #       package = pkgs.dejavu_fonts;
-  #       name = "DejaVu Sans";
-  #     };
-  #     monospace = {
-  #       package = pkgs.dejavu_fonts;
-  #       name = "DejaVu Sans Mono";
-  #     };
-  #     emoji = {
-  #       package = pkgs.noto-fonts-emoji;
-  #       name = "Noto Color Emoji";
-  #     };
-  #   };
-  # };
 
   # Internationalization
   i18n = {
@@ -92,18 +81,47 @@ in {
       ]);
   };
 
-  # Desktop Environment
-  programs.sway = {
-    enable = true;
-    wrapperFeatures.gtk = true;
-    xwayland.enable = true;
+  # Desktop Environment & Display
+  programs = {
+    # Window Managers
+    sway = {
+      enable = true;
+      wrapperFeatures.gtk = true;
+      xwayland.enable = true;
+    };
+    hyprland = {
+      enable = true;
+      xwayland.enable = true;
+    };
+
+    # Core Programs
+    firefox.enable = true;
+    dconf.enable = true;
+    fish.enable = true;
+    thunar = {
+      enable = true;
+      plugins = with pkgs.xfce; [
+        thunar-archive-plugin
+        thunar-volman
+      ];
+    };
+
+    # Development Tools
+    wireshark.enable = true;
+    nix-index.enable = true;
+    command-not-found.enable = false;
+
+    # System Utilities
+    mtr.enable = true;
+    xfconf.enable = true;
+    gnupg.agent = {
+      enable = true;
+      enableSSHSupport = true;
+      pinentryPackage = lib.mkForce pkgs.pinentry-gnome3;
+    };
   };
 
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
-  };
-
+  # XDG Portal Configuration
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [
@@ -113,12 +131,11 @@ in {
     config.common.default = "*";
   };
 
-  # Display and Desktop Services
+  # System Services
   services = {
+    # Desktop Services
     udisks2.enable = true;
-
     flatpak.enable = true;
-
     displayManager = {
       sddm = {
         enable = true;
@@ -131,6 +148,8 @@ in {
     };
     desktopManager.plasma6.enable = true;
     gnome.gnome-keyring.enable = true;
+    tumbler.enable = true;
+    gvfs.enable = true;
 
     # Audio
     pipewire = {
@@ -142,7 +161,7 @@ in {
       pulse.enable = true;
     };
 
-    # Other Services
+    # Network Services
     printing.enable = true;
     avahi = {
       enable = true;
@@ -153,29 +172,14 @@ in {
       enable = true;
       openFirewall = true;
     };
-
-    tumbler.enable = true;
-    gvfs.enable = true;
   };
 
-  # Audio Configuration
-  hardware = {
-    pulseaudio.enable = false;
-    opengl = {
-      enable = true;
-      driSupport = true;
-      driSupport32Bit = true;
-    };
-  };
-
-  # Security
+  # Security Configuration
   security = {
     rtkit.enable = true;
     polkit.enable = true;
     sudo.wheelNeedsPassword = false;
-    pam.services = {
-      login.enableGnomeKeyring = true;
-    };
+    pam.services.login.enableGnomeKeyring = true;
     wrappers = {
       fusermount = {
         source = "${pkgs.fuse}/bin/fusermount";
@@ -192,7 +196,7 @@ in {
     };
   };
 
-  # Fonts
+  # Font Configuration
   fonts.packages = with pkgs; [
     (nerdfonts.override {
       fonts = [
@@ -205,30 +209,6 @@ in {
       ];
     })
   ];
-
-  # Programs
-  programs = {
-    firefox.enable = true;
-    dconf.enable = true;
-    mtr.enable = true;
-    fish.enable = true;
-    wireshark.enable = true;
-    nix-index.enable = true;
-    command-not-found.enable = false;
-    gnupg.agent = {
-      enable = true;
-      enableSSHSupport = true;
-      pinentryPackage = lib.mkForce pkgs.pinentry-gnome3;
-    };
-    thunar = {
-      enable = true;
-      plugins = with pkgs.xfce; [
-        thunar-archive-plugin
-        thunar-volman
-      ];
-    };
-    xfconf.enable = true;
-  };
 
   # Virtualization
   virtualisation = {
@@ -253,7 +233,7 @@ in {
     docker.enable = true;
   };
 
-  # User Configuration
+  # User Management
   users.users.bibi = {
     isNormalUser = true;
     description = "bibi";
@@ -268,7 +248,7 @@ in {
     shell = pkgs.fish;
   };
 
-  # Home Manager Configuration
+  # Home Manager
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
@@ -276,7 +256,7 @@ in {
     backupFileExtension = "hm-backup";
   };
 
-  # Media Server Configuration
+  # Media Server
   nixarr = {
     enable = true;
     vpn.enable = false;
@@ -297,88 +277,119 @@ in {
 
   # System Packages
   environment.systemPackages = with pkgs; [
-    (hiPrio parallel)
-    aichat
-    alejandra
-    android-tools
-    anki
-    apktool
-    bc
-    bindfs
-    black
-    bottles
-    burpsuite
-    cabal-install
-    cabextract
-    code-cursor
-    curl
-    deadnix
-    exploitdb
-    fclones
-    ffmpeg
-    file
-    fuse
+    # Development Tools
     gcc
     ghc
-    ghidra-bin
-    glow
-    grim
-    hashcat
+    nodejs
+    cabal-install
     haskell-language-server
-    hyprshot
-    imagemagick
-    isort
-    jadx
-    john
-    jsbeautifier
+    stack
+    pre-commit
+    # System Utilities
+    (hiPrio parallel)
+    bindfs
+    curl
+    fuse
     kmod
     libvirt
-    literate
-    mako
-    manix
-    metasploit
     moreutils
-    nix-init
-    nix-output-monitor
-    nmap
-    nodejs
-    obsidian
-    openvpn
-    ormolu
-    pavucontrol
     pciutils
     polkit
-    poppler_utils
-    powershell
-    pre-commit
     qemu
-    qimgv
-    quickemu
-    realesrgan-ncnn-vulkan
-    slurp
-    snowfallorg.flake
-    socat
-    spacenavd
-    sqlmap
-    stack
-    stegseek
     swtpm
-    texliveTeTeX
-    xfce.thunar
     unionfs-fuse
     unixtools.xxd
-    unzip
-    uv
-    vdhcoapp
-    veracrypt
-    vscode
     wget
+    # Nix Tools
+    alejandra
+    deadnix
+    manix
+    nix-init
+    nix-output-monitor
+    snowfallorg.flake
+    uv
+    # Security Tools
+    burpsuite
+    exploitdb
+    hashcat
+    john
+    metasploit
+    nmap
+    openvpn
+    sqlmap
+    stegseek
+    veracrypt
+    wordlists
+    # Media Tools
+    ffmpeg
+    imagemagick
+    mpv
+    pavucontrol
+    poppler_utils
+    qimgv
+    realesrgan-ncnn-vulkan
+    # Desktop Applications
+    aichat
+    anki
+    code-cursor
+    glow
+    literate
+    obsidian
+    vscode
+    # File Management
+    fclones
+    unzip
+    xfce.thunar
+    zip
+    # Android Development
+    android-tools
+    apktool
+    jadx
+    # Window Manager Tools
+    grim
+    hyprshot
+    mako
+    slurp
+    spacenavd
+    wl-clipboard
+    xdg-utils
+    # Gaming & Compatibility
+    bottles
     wine
     winetricks
     wineWowPackages.waylandFull
-    wl-clipboard
-    wordlists
-    xdg-utils
-    zip
+    # Text Processing
+    bc
+    black
+    isort
+    jsbeautifier
+    # Miscellaneous
+    alacritty
+    cabal-fmt
+    cabextract
+    cargo
+    coreutils
+    emacs30
+    foot
+    gnumake
+    grimshot
+    lsb-release
+    mokutil
+    neovim
+    nixfmt
+    nx
+    ormolu
+    pipenv
+    pup
+    python3
+    quickemu
+    rust-analyzer
+    rustc
+    shellcheck
+    socat
+    texliveTeTeX
+    tide
+    vdhcoapp
+    viu
   ];
 }

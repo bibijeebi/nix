@@ -4,23 +4,22 @@
   ...
 }: {
   home.stateVersion = "24.05";
-  programs.home-manager.enable = true;
 
+  # Environment Variables
   home.sessionVariables = {
+    # Core applications
     EDITOR = "nvim";
-    VISUAL = "cursor";
-    BROWSER = "google-chrome";
+    BROWSER = "firefox";
     TERMINAL = "kitty";
-    PAGER = "less";
+    PAGER = "more";
 
-    LESSHISTFILE = "-"; # Disable less history file
+    # Application configs
     FZF_DEFAULT_COMMAND = "fd --type f"; # FZF default search command
-    MANPAGER = "sh -c 'col -bx | bat -l man -p'"; # Better man pages
-
     MOZ_USE_XINPUT2 = "1"; # Better Firefox touch/scrolling
   };
 
   programs = {
+    # Development Tools
     git = {
       enable = true;
       userName = "bibijeebi";
@@ -32,6 +31,7 @@
       nix-direnv.enable = true;
     };
 
+    # Shell Configuration
     fish = {
       enable = true;
       interactiveShellInit = "set fish_greeting";
@@ -45,14 +45,30 @@
         ya = "yazi";
       };
       plugins = [
+        # Navigation
         {
           name = "z";
           src = pkgs.fishPlugins.z.src;
         }
         {
+          name = "fzf-fish";
+          src = pkgs.fishPlugins.fzf-fish.src;
+        }
+        # Editing
+        {
           name = "autopair";
           src = pkgs.fishPlugins.autopair.src;
         }
+        {
+          name = "sponge";
+          src = pkgs.fishPlugins.sponge.src;
+        }
+        # Git integration
+        {
+          name = "git-abbr";
+          src = pkgs.fishPlugins.git-abbr.src;
+        }
+        # Utilities
         {
           name = "fish-you-should-use";
           src = pkgs.fishPlugins.fish-you-should-use.src;
@@ -61,18 +77,7 @@
           name = "done";
           src = pkgs.fishPlugins.done.src;
         }
-        {
-          name = "fzf-fish";
-          src = pkgs.fishPlugins.fzf-fish.src;
-        }
-        {
-          name = "git-abbr";
-          src = pkgs.fishPlugins.git-abbr.src;
-        }
-        {
-          name = "sponge";
-          src = pkgs.fishPlugins.sponge.src;
-        }
+        # Theme
         {
           name = "tide";
           src = pkgs.fishPlugins.tide.src;
@@ -80,32 +85,7 @@
       ];
     };
 
-    chromium = {
-      enable = true;
-      package = pkgs.google-chrome;
-      commandLineArgs = [
-        "--hide-scrollbars"
-        "--disable-notifications"
-        "--disable-features=DownloadBubble"
-      ];
-    };
-
-    # neovim = {
-    #   enable = true;
-    #   defaultEditor = true;
-    #   viAlias = true;
-    #   vimAlias = true;
-    #   vimdiffAlias = true;
-    #   plugins = with pkgs.vimPlugins; [
-    #     nvim-lspconfig
-    #     nvim-treesitter.withAllGrammars
-    #     plenary-nvim
-    #     gruvbox-material
-    #     mini-nvim
-    #   ];
-    # };
-
-    # Terminal Emulator
+    # Terminal
     kitty = {
       enable = true;
       theme = "Catppuccin-Mocha";
@@ -121,28 +101,30 @@
       };
     };
 
+    # CLI Tools
     bat.enable = true;
     btop.enable = true;
     eza.enable = true;
     fd.enable = true;
-    firefox.enable = true;
     fzf.enable = true;
-    gallery-dl.enable = true;
     gh.enable = true;
     gpg.enable = true;
     htop.enable = true;
     jq.enable = true;
-    mpv.enable = true;
-    pandoc.enable = true;
     ripgrep.enable = true;
     taskwarrior.enable = true;
     tmux.enable = true;
     yazi.enable = true;
-    yt-dlp.enable = true;
     zoxide.enable = true;
+
+    # Media Tools
+    gallery-dl.enable = true;
+    mpv.enable = true;
+    pandoc.enable = true;
+    yt-dlp.enable = true;
   };
 
-  # In your home-manager configuration
+  # Theming
   gtk = {
     enable = true;
     theme = {
@@ -163,35 +145,54 @@
   fonts.fontconfig.enable = true;
 
   # Window Manager
-  wayland.windowManager.sway = {
-    enable = true;
-    config = rec {
-      modifier = "Mod4";
-      terminal = "kitty";
-      startup = [
-        {command = "cursor ~/nix";}
-      ];
+  wayland.windowManager = {
+    # Sway
+    sway = {
+      enable = true;
+      config = rec {
+        modifier = "Mod4";
+        terminal = "kitty";
+        startup = [
+          {command = "cursor ~/nix";}
+        ];
+      };
+    };
+
+    # Hyprland
+    hyprland = {
+      enable = true;
+      extraConfig = ''
+        exec-once = "cursor ~/nix"
+      '';
     };
   };
 
+  # File Associations
   xdg = {
     mime.enable = true;
     mimeApps = {
       enable = true;
       defaultApplications = {
-        "application/pdf" = ["google-chrome.desktop"];
+        # Documents
+        "application/pdf" = ["firefox.desktop"];
+        "text/plain" = ["neovim.desktop"];
+        "text/html" = "firefox.desktop";
+
+        # Images
         "image/jpeg" = ["qimgv.desktop"];
         "image/png" = ["qimgv.desktop"];
-        "inode/directory" = ["thunar.desktop"];
-        "text/html" = "google-chrome.desktop";
-        "text/plain" = ["neovim.desktop"];
+
+        # Video
         "video/mkv" = ["mpv.desktop"];
         "video/mp4" = ["mpv.desktop"];
         "video/webm" = ["mpv.desktop"];
-        "x-scheme-handler/about" = ["google-chrome.desktop"];
-        "x-scheme-handler/http" = ["google-chrome.desktop"];
-        "x-scheme-handler/https" = ["google-chrome.desktop"];
-        "x-scheme-handler/unknown" = ["google-chrome.desktop"];
+
+        # System
+        "inode/directory" = ["thunar.desktop"];
+        "x-scheme-handler/about" = ["firefox.desktop"];
+        "x-scheme-handler/http" = ["firefox.desktop"];
+        "x-scheme-handler/https" = ["firefox.desktop"];
+        "x-scheme-handler/unknown" = ["firefox.desktop"];
       };
     };
   };
