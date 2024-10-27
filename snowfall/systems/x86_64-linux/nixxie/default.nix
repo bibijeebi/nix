@@ -281,6 +281,7 @@ in {
     git
     glow
     gnumake
+    google-chrome
     grim
     hashcat
     haskell-language-server
