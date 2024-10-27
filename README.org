@@ -1,0 +1,99 @@
+#+title: My NixOS Config
+#+author: bibijeebi
+#+email: bennyforeman1@gmail.com
+#+date: 2024-10-27
+
+* Overview
+
+This repository contains my personal NixOS configuration using the Snowfall ecosystem for enhanced organization and modularity.
+
+* Structure
+
+The configuration follows the Snowfall convention with the following structure:
+
+#+begin_src
+.
+├── flake.nix
+└── snowfall/
+    └── shell.nix
+#+end_src
+
+* Core Components
+
+** Framework
+- Using [[https://github.com/snowfallorg/lib][snowfall-lib]] for flake utilities
+- Using [[https://github.com/snowfallorg/flake][snowfall-flake]] for additional overlays
+
+** System Management
+- Integrated with [[https://github.com/nix-community/home-manager][home-manager]] for user environment management
+
+** Additional Applications
+- [[https://github.com/rasmus-kirk/nixarr][nixarr]] - NixOS modules for *arr applications
+- [[https://github.com/emmanuelrosa/erosanix][erosanix]] - Additional packages and configurations
+
+* Features
+
+** Modules
+- NixOS modules including:
+  - home-manager
+  - nixarr default module
+
+** Overlays
+- Includes snowfall-flake's package/flake overlay
+
+** Development
+- Default development shell provided
+- Uses Alejandra as the Nix formatter
+
+* Usage
+
+** Getting Started
+
+1. Clone this repository:
+   #+begin_src bash
+   git clone <repository-url>
+   cd <repository-name>
+   #+end_src
+
+2. Build and switch to the configuration:
+   #+begin_src bash
+   sudo nixos-rebuild switch --flake .#
+   #+end_src
+
+** Development Environment
+
+To enter the development shell:
+#+begin_src bash
+nix develop
+#+end_src
+
+* Configuration
+
+** Channel Configuration
+- Allows unfree packages (allowUnfree = true)
+
+** System Modules
+The configuration includes various NixOS modules managed through the Snowfall framework.
+
+* Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
+
+* License
+
+[Insert your license information here]
+
+* Notes
+
+- This configuration uses the nixos-unstable channel
+- All nixpkgs inputs are aligned to follow the main nixpkgs input
+- The configuration is structured using the Snowfall framework for better organization
+
+* Contact
+
+- Author: bibijeebi
+- Email: bennyforeman1@gmail.com
