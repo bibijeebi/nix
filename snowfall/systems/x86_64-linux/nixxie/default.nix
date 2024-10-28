@@ -296,6 +296,8 @@ in {
     exploitdb
     fclones
     ffmpeg
+    ffmpegthumbnailer
+    file
     foot
     fuse
     gcc
@@ -328,6 +330,7 @@ in {
     mpv
     neovim
     networkmanagerapplet
+    nil
     nix-direnv
     nix-init
     nix-output-monitor
@@ -339,12 +342,14 @@ in {
     obsidian
     openvpn
     ormolu
+    p7zip
     pamixer
     pavucontrol
     pciutils
     pipenv
     playerctl
     polkit
+    poppler
     poppler_utils
     pre-commit
     pup
@@ -357,6 +362,7 @@ in {
     rust-analyzer
     rustc
     shellcheck
+    shfmt
     slurp
     snowfallorg.flake
     socat
