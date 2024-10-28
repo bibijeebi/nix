@@ -247,11 +247,6 @@ in {
     shell = pkgs.fish;
   };
 
-  home-manager.useGlobalPkgs = true;
-  home-manager.useUserPackages = true;
-  home-manager.users.bibi = import ./home.nix;
-  home-manager.backupFileExtension = "backup";
-
   # Media Server
   nixarr = {
     enable = true;
