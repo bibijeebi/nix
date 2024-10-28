@@ -23,6 +23,8 @@
     # Applications
     nixarr.url = "github:rasmus-kirk/nixarr";
     erosanix.url = "github:emmanuelrosa/erosanix";
+
+    musnix.url = "github:musnix/musnix";
   };
 
   outputs = inputs: let
@@ -36,6 +38,7 @@
       systems.modules.nixos = with inputs; [
         home-manager.nixosModules.home-manager
         nixarr.nixosModules.default
+        musnix.nixosModules.musnix
       ];
 
       overlays = with inputs; [

@@ -25,7 +25,7 @@ stdenv.mkDerivation rec {
     description = "CLI for the AssemblyAI API";
     homepage = "https://github.com/AssemblyAI/assemblyai-cli";
     license = licenses.asl20;
-    maintainers = with maintainers; []; # Add maintainers if known
+    maintainers = []; # Add maintainers if known
     platforms = platforms.linux;
     mainProgram = "assemblyai";
   };
