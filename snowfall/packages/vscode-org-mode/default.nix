@@ -8,40 +8,16 @@
   callPackage,
   vsce,
   runCommand,
-}: let
-  src = fetchFromGitHub {
-    owner = "vscode-org-mode";
-    repo = "vscode-org-mode";
-    rev = "9ad422cb215c6be6a877617db984543e8ffa6584";
-    hash = "sha256-0rxKcsULJad5mWHQ7rEZFAO+KlgIWtpeXhIfDEtCoxc=";
+}:
+(vscode-utils.buildVscodeMarketplaceExtension {
+  mktplcRef = {
+    version = "1.0.0";
+    publisher = "vscode-org-mode";
+    hash = "sha256-o9CIjMlYQQVRdtTlOp9BAVjqrfFIhhdvzlyhlcOv5rY=";
   };
-
-  packageJson = builtins.fromJSON (builtins.readFile (src + "/package.json"));
-
-  nodeDependencies = (callPackage ./node2nix/default.nix {}).nodeDependencies;
-
-  vsix = stdenv.mkDerivation {
-    pname = packageJson.name;
-    version = packageJson.version;
-    inherit src;
-    buildInputs = [nodejs vsce];
-    buildPhase = ''
-      ln -s ${nodeDependencies}/lib/node_modules ./node_modules
-      export PATH="${nodeDependencies}/bin:$PATH"
-      vsce package
-    '';
-    installPhase = ''
-      mkdir -p $out
-      cp *.vsix $out/${packageJson.name}-${packageJson.version}.vsix
-    '';
-    outputHashMode = "recursive";
-    outputHashAlgo = "sha256";
-  };
-in
-  vscode-utils.buildVscodeMarketplaceExtension {
-    mktplcRef = {
-      inherit (packageJson) name version;
-      publisher = "vscode-org-mode";
-    };
-    inherit vsix;
-  }
+})
+.overrideAttrs (oldAttrs: {
+  postInstall = ''
+    patch -p1 --directory=$out/$installPrefix < ${./add-nix-language-to-syntaxes.patch}
+  '';
+})
