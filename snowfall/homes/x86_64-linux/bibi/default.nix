@@ -118,10 +118,10 @@
         mattn.lisp
         mikoz.black-py
         mkhl.direnv
-        ms-python.black-formatter
+        # ms-python.black-formatter
         ms-python.debugpy
         ms-python.isort
-        ms-python.python
+        # ms-python.python
         ms-python.vscode-pylance
         ms-vscode.powershell
         ms-vscode.vscode-typescript-next
@@ -134,7 +134,7 @@
         tamasfe.even-better-toml
         timonwong.shellcheck
         vscode-org-mode.org-mode
-        yib.rust-bundle
+        # yib.rust-bundle
       ];
     };
     bat.enable = true;
