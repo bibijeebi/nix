@@ -101,6 +101,26 @@
       };
     };
 
+    waybar = {
+      enable = true;
+      systemd.enable = true;
+      settings = {
+        mainBar = {
+          layer = "top";
+          position = "top";
+          modules-left = ["hyprland/workspaces" "hyprland/mode"];
+          modules-center = ["hyprland/window"];
+          modules-right = ["pulseaudio" "network" "cpu" "memory" "battery" "clock" "tray"];
+        };
+      };
+    };
+
+    vscode = {
+      enable = true;
+      extensions = with pkgs; [
+      ];
+    };
+
     # CLI Tools
     bat.enable = true;
     btop.enable = true;
@@ -125,21 +145,6 @@
 
   # Theming
   fonts.fontconfig.enable = true;
-
-  # Waybar configuration
-  programs.waybar = {
-    enable = true;
-    systemd.enable = true;
-    settings = {
-      mainBar = {
-        layer = "top";
-        position = "top";
-        modules-left = ["hyprland/workspaces" "hyprland/mode"];
-        modules-center = ["hyprland/window"];
-        modules-right = ["pulseaudio" "network" "cpu" "memory" "battery" "clock" "tray"];
-      };
-    };
-  };
 
   gtk = {
     enable = true;

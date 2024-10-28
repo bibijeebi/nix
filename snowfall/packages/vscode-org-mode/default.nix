@@ -11,6 +11,7 @@
 }:
 (vscode-utils.buildVscodeMarketplaceExtension {
   mktplcRef = {
+    name = "org-mode";
     version = "1.0.0";
     publisher = "vscode-org-mode";
     hash = "sha256-o9CIjMlYQQVRdtTlOp9BAVjqrfFIhhdvzlyhlcOv5rY=";
