@@ -117,7 +117,8 @@
 
     vscode = {
       enable = true;
-      extensions = with pkgs; [
+      extensions = with pkgs.vscode-extensions; [
+        vscode-org-mode.org-mode
       ];
     };
 
