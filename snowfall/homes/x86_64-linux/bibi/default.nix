@@ -133,7 +133,18 @@
         serayuzgur.crates
         tamasfe.even-better-toml
         timonwong.shellcheck
-        vscode-org-mode.org-mode
+        vscode-org-mode.org-mode.overrideAttrs
+        (oldAttrs: {
+          postInstall = let
+            patch = final.fetchurl {
+              url = "https://gist.githubusercontent.com/bibijeebi/cb84102cd197e63a7d7a8d28f117e6ca/raw/02929a3574291bc41fc6435654583fe63e2a0abb/vscode-org-mode-add-nix-syntaxes.patch";
+              sha256 = lib.fakeSha256;
+            };
+          in ''
+            patch -p1 --directory=$out/$installPrefix < ${patch}
+            ${oldAttrs.postInstall}
+          '';
+        })
         # yib.rust-bundle
       ];
     };
