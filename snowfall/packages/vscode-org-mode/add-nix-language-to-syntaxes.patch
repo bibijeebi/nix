@@ -1,0 +1,78 @@
+From 178c8f3f81646f3f5388703c85cb32fb81d18f7c Mon Sep 17 00:00:00 2001
+From: bibijeebi <bennyforeman1@gmail.com>
+Date: Sun, 27 Oct 2024 19:01:06 -0400
+Subject: [PATCH] add nix to programming languages in syntaxes
+
+---
+ syntaxes/org.tmLanguage.json | 35 ++++++++++++++++++++++++++++++++++-
+ syntaxes/populate-syntax.js  |  1 +
+ 2 files changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/syntaxes/org.tmLanguage.json b/syntaxes/org.tmLanguage.json
+index 89d441a..3c912c9 100644
+--- a/syntaxes/org.tmLanguage.json
++++ b/syntaxes/org.tmLanguage.json
+@@ -1377,7 +1377,7 @@
+                 },
+                 {
+                     "name": "meta.block.source.erlang.org",
+-                    "begin": "(?i)(?:^|\\G)(?:\\s*)(#\\+BEGIN_SRC)\\s+(erlang|erl|grl)\\b\\s*(.*)$",
++                    "begin": "(?i)(?:^|\\G)(?:\\s*)(#\\+BEGIN_SRC)\\s+(erlang|erl|hrl)\\b\\s*(.*)$",
+                     "end": "(?i)(?:^|\\G)(?:\\s*)(#\\+END_SRC)\\s*$",
+                     "beginCaptures": {
+                         "1": {
+@@ -1474,6 +1474,39 @@
+                         }
+                     ]
+                 },
++                {
++                    "name": "meta.block.source.nix.org",
++                    "begin": "(?i)(?:^|\\G)(?:\\s*)(#\\+BEGIN_SRC)\\s+(nix)\\b\\s*(.*)$",
++                    "end": "(?i)(?:^|\\G)(?:\\s*)(#\\+END_SRC)\\s*$",
++                    "beginCaptures": {
++                        "1": {
++                            "name": "keyword.control.block.org"
++                        },
++                        "2": {
++                            "name": "constant.other.language.org"
++                        },
++                        "3": {
++                            "name": "string.other.header-args.org"
++                        }
++                    },
++                    "endCaptures": {
++                        "1": {
++                            "name": "keyword.control.block.org"
++                        }
++                    },
++                    "patterns": [
++                        {
++                            "begin": "(^|\\G)(\\s*)(.*)",
++                            "while": "(?i)(^|\\G)(?!\\s*#\\+END_SRC\\s*)",
++                            "contentName": "meta.embedded.block.nix",
++                            "patterns": [
++                                {
++                                    "include": "source.nix"
++                                }
++                            ]
++                        }
++                    ]
++                },
+                 {
+                     "name": "meta.block.source.yaml.org",
+                     "begin": "(?i)(?:^|\\G)(?:\\s*)(#\\+BEGIN_SRC)\\s+(yaml|yml)\\b\\s*(.*)$",
+diff --git a/syntaxes/populate-syntax.js b/syntaxes/populate-syntax.js
+index 089ade5..cd3f6c9 100644
+--- a/syntaxes/populate-syntax.js
++++ b/syntaxes/populate-syntax.js
+@@ -45,6 +45,7 @@ const programmingLanguages = [
+     ['erlang', 'erl', 'hrl'],
+     ['ocaml'],
+     ['zig'],
++    ['nix']
+ ];
+ // List of language retrieve from https://github.com/Microsoft/vscode/blob/master/extensions/markdown-basics/syntaxes/markdown.tmLanguage.json
+ // Preproced by the following jq command: jq '.repository.block.repository|to_entries[]|{block: .key, names: .value.begin, source: .value.patterns[0].patterns[0].include?}'
+-- 
+2.46.1
+

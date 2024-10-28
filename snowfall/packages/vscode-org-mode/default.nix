@@ -1,35 +1,47 @@
 {
+  lib,
   stdenv,
   fetchFromGitHub,
+  vscode-utils,
   nodejs,
+  node2nix,
+  callPackage,
   vsce,
-  lib,
-}:
-stdenv.mkDerivation {
-  name = "vscode-org-mode";
-  version = "575a84f1e70b1326a865a60267a3551dcf11eebe";
-
+  runCommand,
+}: let
   src = fetchFromGitHub {
-    owner = "bibijeebi";
+    owner = "vscode-org-mode";
     repo = "vscode-org-mode";
-    rev = "575a84f1e70b1326a865a60267a3551dcf11eebe";
-    sha256 = "sha256-8gOTtXFd51LczSoX/wtUUfUcLz3N0VemrsS/NmJWoqg=";
+    rev = "9ad422cb215c6be6a877617db984543e8ffa6584";
+    hash = "sha256-0rxKcsULJad5mWHQ7rEZFAO+KlgIWtpeXhIfDEtCoxc=";
   };
 
-  buildInputs = [nodejs vsce];
+  packageJson = builtins.fromJSON (builtins.readFile (src + "/package.json"));
 
-  buildPhase = ''
-    vsce package
-  '';
+  nodeDependencies = (callPackage ./node2nix/default.nix {}).nodeDependencies;
 
-  installPhase = ''
-    mkdir -p $out/share/vscode/extensions
-    cp -r . $out/share/vscode/extensions/org-mode
-  '';
-
-  meta = with lib; {
-    description = "Org-mode for VSCode";
-    homepage = "https://github.com/bibijeebi/vscode-org-mode";
-    license = licenses.mit;
+  vsix = stdenv.mkDerivation {
+    pname = packageJson.name;
+    version = packageJson.version;
+    inherit src;
+    buildInputs = [nodejs vsce];
+    buildPhase = ''
+      ln -s ${nodeDependencies}/lib/node_modules ./node_modules
+      export PATH="${nodeDependencies}/bin:$PATH"
+      vsce package
+    '';
+    installPhase = ''
+      mkdir -p $out
+      cp *.vsix $out/${packageJson.name}-${packageJson.version}.vsix
+    '';
+    outputHashMode = "recursive";
+    outputHashAlgo = "sha256";
   };
-}
+in
+  vscode-utils.buildVscodeMarketplaceExtension {
+    mktplcRef = {
+      inherit (packageJson) name version;
+      publisher = "vscode-org-mode";
+    };
+    inherit vsix;
+  }
