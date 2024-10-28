@@ -27,8 +27,7 @@
     musnix.url = "github:musnix/musnix";
   };
 
-  outputs = inputs: let
-  in
+  outputs = inputs:
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
       src = ./.;

@@ -2,10 +2,12 @@
   pkgs,
   inputs,
   ...
-}: let
-  locale = "en_US.UTF-8";
-in {
+}: {
   imports = [./hardware.nix];
+
+  services.radarr = {
+    enable = true;
+  };
 
   # Core System Configuration
   system.stateVersion = "24.11";
@@ -37,9 +39,6 @@ in {
 
   # System Boot & Hardware
   boot = {
-    supportedFilesystems = ["fuse"];
-    kernelModules = ["fuse"];
-    kernel.sysctl."kernel.unprivileged_userns_clone" = 1;
     loader = {
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
@@ -60,32 +59,16 @@ in {
   };
 
   # Internationalization
-  i18n = {
+  i18n = let
+    locale = "en_US.UTF-8";
+  in {
     defaultLocale = locale;
-    extraLocaleSettings = builtins.listToAttrs (map (key: {
-        name = key;
-        value = locale;
-      }) [
-        "LC_ADDRESS"
-        "LC_IDENTIFICATION"
-        "LC_MEASUREMENT"
-        "LC_MONETARY"
-        "LC_NAME"
-        "LC_NUMERIC"
-        "LC_PAPER"
-        "LC_TELEPHONE"
-        "LC_TIME"
-      ]);
+    extraLocaleSettings = {
+      LC_ALL = locale;
+    };
   };
 
   console.useXkbConfig = true;
-  services.xserver.xkb = {
-    layout = "us";
-    options = "caps:escape,terminate:ctrl_alt_bksp";
-  };
-
-  # Ensure KMSCon uses the same XKB config (useful for virtual consoles)
-  services.kmscon.useXkbConfig = true;
 
   # Desktop Environment & Display
   programs = {
@@ -97,7 +80,6 @@ in {
 
     # Core Programs
     firefox.enable = true;
-    dconf.enable = true;
     fish.enable = true;
     thunar = {
       enable = true;
@@ -119,6 +101,10 @@ in {
 
   # System Services
   services = {
+    xserver.xkb = {
+      layout = "us";
+      options = "caps:escape,terminate:ctrl_alt_bksp";
+    };
     # Desktop Services
     udisks2.enable = true;
     flatpak.enable = true;
@@ -132,8 +118,6 @@ in {
         user = "bibi";
       };
     };
-    desktopManager.plasma6.enable = true;
-    gnome.gnome-keyring.enable = true;
     tumbler.enable = true;
     gvfs.enable = true;
 
@@ -175,12 +159,6 @@ in {
       }
     ];
     wrappers = {
-      fusermount = {
-        source = "${pkgs.fuse}/bin/fusermount";
-        owner = "root";
-        group = "root";
-        setuid = true;
-      };
       bindfs = {
         owner = "root";
         group = "root";
@@ -249,24 +227,16 @@ in {
     shell = pkgs.fish;
   };
 
-  # Media Server
-  nixarr = {
-    enable = true;
-    vpn.enable = false;
-    jellyfin = {
-      enable = true;
-      vpn.enable = false;
-      expose.vpn.enable = false;
-    };
-    transmission = {
-      enable = true;
-      vpn.enable = false;
-    };
-    sonarr.enable = true;
-    radarr.enable = true;
-    prowlarr.enable = true;
-    readarr.enable = true;
-  };
+  # nixarr = {
+  #   enable = true;
+  #   vpn.enable = false;
+  #   jellyfin.enable = true;
+  #   transmission.enable = true;
+  #   sonarr.enable = true;
+  #   radarr.enable = true;
+  #   prowlarr.enable = true;
+  #   readarr.enable = true;
+  # };
 
   # System Packages
   environment.systemPackages = with pkgs; [
@@ -373,9 +343,6 @@ in {
     stack
     stegseek
     sway-contrib.grimshot
-    swayidle
-    swaylock
-    swaylock-effects
     swtpm
     swww
     texliveTeTeX
