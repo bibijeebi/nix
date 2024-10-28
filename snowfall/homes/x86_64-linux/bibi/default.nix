@@ -1,35 +1,25 @@
 {pkgs, ...}: {
   home = {
     stateVersion = "24.11";
-
-    # Environment Variables
     sessionVariables = {
-      # Core applications
       EDITOR = "nvim";
       BROWSER = "firefox";
       TERMINAL = "kitty";
       PAGER = "more";
-
-      # Application configs
-      FZF_DEFAULT_COMMAND = "fd --type f"; # FZF default search command
-      MOZ_USE_XINPUT2 = "1"; # Better Firefox touch/scrolling
+      FZF_DEFAULT_COMMAND = "fd --type f";
+      MOZ_USE_XINPUT2 = "1";
     };
   };
-
   programs = {
-    # Development Tools
     git = {
       enable = true;
       userName = "bibijeebi";
       userEmail = "bennyforeman1@gmail.com";
     };
-
     direnv = {
       enable = true;
       nix-direnv.enable = true;
     };
-
-    # Shell Configuration
     fish = {
       enable = true;
       interactiveShellInit = "set fish_greeting";
@@ -43,7 +33,6 @@
         ya = "yazi";
       };
       plugins = with pkgs.fishPlugins; [
-        # Navigation
         {
           name = "z";
           src = z.src;
@@ -52,7 +41,6 @@
           name = "fzf-fish";
           src = fzf-fish.src;
         }
-        # Editing
         {
           name = "autopair";
           src = autopair.src;
@@ -61,12 +49,10 @@
           name = "sponge";
           src = sponge.src;
         }
-        # Git integration
         {
           name = "git-abbr";
           src = git-abbr.src;
         }
-        # Utilities
         {
           name = "fish-you-should-use";
           src = fish-you-should-use.src;
@@ -75,15 +61,12 @@
           name = "done";
           src = done.src;
         }
-        # Theme
         {
           name = "tide";
           src = tide.src;
         }
       ];
     };
-
-    # Terminal
     kitty = {
       enable = true;
       themeFile = "Catppuccin-Mocha";
@@ -98,7 +81,6 @@
         mouse_hide_wait = "-1.0";
       };
     };
-
     waybar = {
       enable = true;
       systemd.enable = true;
@@ -112,7 +94,6 @@
         };
       };
     };
-
     vscode = {
       enable = false;
       extensions = with pkgs.vscode-extensions; [
@@ -132,14 +113,43 @@
         ms-python.isort
         ms-python.python
         ms-python.vscode-pylance
-        # internal package
         vscode-org-mode.org-mode
-        # marketplace package
         qcz.text-power-tools
+
+        mvllow.rose-pine
+        bbenoist.nix
+        kamadorueda.alejandra
+        mikoz.black-py
+        ms-python.debugpy
+        ms-python.python
+        ms-python.vscode-pylance
+        ms-python.isort
+        qcz.text-power-tools
+        timonwong.shellcheck
+        foxundermoon.shell-format
+        davidanson.vscode-markdownlint
+        ms-vscode.powershell
+        justusadam.language-haskell
+        berberman.vscode-cabal-fmt
+        haskell.haskell
+        tamasfe.even-better-toml
+        yib.rust-bundle
+        serayuzgur.crates
+        dustypomerleau.rust-syntax
+        artdiniz.quitcontrol-vscode
+        dracula-theme.theme-dracula
+        redhat.vscode-yaml
+        mkhl.direnv
+        kenhowardpdx.vscode-gist
+        lacroixdavid1.vscode-format-context-menu
+        mattn.lisp
+        natqe.reload
+        ms-vscode.vscode-typescript-next
+        jnoortheen.nix-ide
+        rust-lang.rust-analyzer
+        bmalehorn.vscode-fish
       ];
     };
-
-    # CLI Tools
     bat.enable = true;
     btop.enable = true;
     eza.enable = true;
@@ -153,17 +163,12 @@
     tmux.enable = true;
     yazi.enable = true;
     zoxide.enable = true;
-
-    # Media Tools
     gallery-dl.enable = true;
     mpv.enable = true;
     pandoc.enable = true;
     yt-dlp.enable = true;
   };
-
-  # Theming
   fonts.fontconfig.enable = true;
-
   gtk = {
     enable = true;
     theme = {
@@ -171,37 +176,28 @@
       package = pkgs.adwaita-icon-theme;
     };
   };
-
   qt = {
     enable = true;
     platformTheme.name = "gtk";
   };
-
   wayland.windowManager.hyprland = {
     enable = true;
     systemd.enable = true;
     settings = {
-      # Monitor configuration
       monitor = [
         "HDMI-A-1,1920x1080@60,0x0,1"
         ",preferred,auto,1"
       ];
-
-      # General settings
       general = {
         gaps_in = 5;
         gaps_out = 10;
         border_size = 2;
         layout = "dwindle";
       };
-
-      # Input configuration
       input = {
         follow_mouse = 0;
         sensitivity = 0;
       };
-
-      # Window decoration
       decoration = {
         rounding = 10;
         blur = {
@@ -215,8 +211,6 @@
         shadow_render_power = 3;
         "col.shadow" = "rgba(1a1a1aee)";
       };
-
-      # Animations
       animations = {
         enabled = true;
         bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
@@ -228,20 +222,14 @@
           "workspaces, 1, 6, default"
         ];
       };
-
-      # Layout
       dwindle = {
         pseudotile = true;
         preserve_split = true;
       };
-
-      # Gestures
       gestures = {
         workspace_swipe = true;
         workspace_swipe_fingers = 3;
       };
-
-      # Window rules
       windowrule = [
         "float,^(pavucontrol)$"
         "float,^(blueman-manager)$"
@@ -249,39 +237,27 @@
         "float,title:^(btop)$"
         "float,title:^(update-sys)$"
       ];
-
-      # Variables
       "$mod" = "SUPER";
       "$terminal" = "kitty";
       "$menu" = "wofi --show drun";
-      "$volume" = "pamixer";
-      "$brightness" = "brightnessctl";
-
-      # Key bindings
+      "$volume" = "pavucontrol";
       bind = [
-        # Basic bindings
         "$mod, Return, exec, $terminal"
-        "$mod, Q, killactive,"
+        "$mod, C, killactive,"
         "$mod, M, exit,"
-        "$mod, E, exec, nautilus"
+        "$mod, E, exec, thunar"
         "$mod, V, togglefloating,"
         "$mod, R, exec, $menu"
         "$mod, P, pseudo,"
         "$mod, J, togglesplit,"
-
-        # Move focus
         "$mod, left, movefocus, l"
         "$mod, right, movefocus, r"
         "$mod, up, movefocus, u"
         "$mod, down, movefocus, d"
-
-        # Move windows
         "$mod SHIFT, left, movewindow, l"
         "$mod SHIFT, right, movewindow, r"
         "$mod SHIFT, up, movewindow, u"
         "$mod SHIFT, down, movewindow, d"
-
-        # Switch workspaces
         "$mod, 1, workspace, 1"
         "$mod, 2, workspace, 2"
         "$mod, 3, workspace, 3"
@@ -292,8 +268,6 @@
         "$mod, 8, workspace, 8"
         "$mod, 9, workspace, 9"
         "$mod, 0, workspace, 10"
-
-        # Move windows to workspaces
         "$mod SHIFT, 1, movetoworkspace, 1"
         "$mod SHIFT, 2, movetoworkspace, 2"
         "$mod SHIFT, 3, movetoworkspace, 3"
@@ -304,37 +278,14 @@
         "$mod SHIFT, 8, movetoworkspace, 8"
         "$mod SHIFT, 9, movetoworkspace, 9"
         "$mod SHIFT, 0, movetoworkspace, 10"
-
-        # Screenshot bindings
         ", Print, exec, grim"
         "SHIFT, Print, exec, grim -g \"$(slurp)\""
       ];
-
-      # Mouse bindings
       bindm = [
         "$mod, mouse:272, movewindow"
         "$mod, mouse:273, resizewindow"
         "$mod ALT, mouse:272, resizewindow"
       ];
-
-      # Media and function keys
-      bindle = [
-        # Volume
-        ", XF86AudioRaiseVolume, exec, $volume -i 5"
-        ", XF86AudioLowerVolume, exec, $volume -d 5"
-        ", XF86AudioMute, exec, $volume -t"
-
-        # Brightness
-        ", XF86MonBrightnessUp, exec, $brightness set +5%"
-        ", XF86MonBrightnessDown, exec, $brightness set 5%-"
-
-        # Media
-        ", XF86AudioPlay, exec, playerctl play-pause"
-        ", XF86AudioNext, exec, playerctl next"
-        ", XF86AudioPrev, exec, playerctl previous"
-      ];
-
-      # Startup applications
       exec-once = [
         "dunst"
         "swww init"
@@ -344,28 +295,19 @@
       ];
     };
   };
-
-  # File Associations
   xdg = {
     mime.enable = true;
     mimeApps = {
       enable = true;
       defaultApplications = {
-        # Documents
         "application/pdf" = ["firefox.desktop"];
         "text/plain" = ["neovim.desktop"];
         "text/html" = "firefox.desktop";
-
-        # Images
         "image/jpeg" = ["qimgv.desktop"];
         "image/png" = ["qimgv.desktop"];
-
-        # Video
         "video/mkv" = ["mpv.desktop"];
         "video/mp4" = ["mpv.desktop"];
         "video/webm" = ["mpv.desktop"];
-
-        # System
         "inode/directory" = ["thunar.desktop"];
         "x-scheme-handler/about" = ["firefox.desktop"];
         "x-scheme-handler/http" = ["firefox.desktop"];
