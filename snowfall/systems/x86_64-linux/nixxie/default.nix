@@ -1,4 +1,8 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  inputs,
+  ...
+}: let
   locale = "en_US.UTF-8";
 in {
   imports = [./hardware.nix];
@@ -9,6 +13,7 @@ in {
 
   # Nix Configuration
   nix = {
+    nixPath = ["nixpkgs=${inputs.nixpkgs}"];
     settings = {
       auto-optimise-store = true;
       experimental-features = ["nix-command" "flakes"];
@@ -332,6 +337,7 @@ in {
     nix-init
     nix-output-monitor
     nix-prefetch-github
+    nixd
     nmap
     node2nix
     nodejs

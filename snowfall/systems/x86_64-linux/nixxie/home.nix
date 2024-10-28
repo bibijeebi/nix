@@ -1,21 +1,19 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
-  home.stateVersion = "24.11";
+{pkgs, ...}: {
+  home = {
+    stateVersion = "24.11";
 
-  # Environment Variables
-  home.sessionVariables = {
-    # Core applications
-    EDITOR = "nvim";
-    BROWSER = "firefox";
-    TERMINAL = "kitty";
-    PAGER = "more";
+    # Environment Variables
+    sessionVariables = {
+      # Core applications
+      EDITOR = "nvim";
+      BROWSER = "firefox";
+      TERMINAL = "kitty";
+      PAGER = "more";
 
-    # Application configs
-    FZF_DEFAULT_COMMAND = "fd --type f"; # FZF default search command
-    MOZ_USE_XINPUT2 = "1"; # Better Firefox touch/scrolling
+      # Application configs
+      FZF_DEFAULT_COMMAND = "fd --type f"; # FZF default search command
+      MOZ_USE_XINPUT2 = "1"; # Better Firefox touch/scrolling
+    };
   };
 
   programs = {

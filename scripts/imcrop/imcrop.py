@@ -7,24 +7,21 @@ import os
 import cv2
 import mediapipe as mp
 import numpy as np
+import argparse
+import glob
+from datetime import datetime
+import shutil
 
-# Configuration - Easy to modify these parameters
-CONFIG = {
-    # Padding settings
-    'MIN_PADDING_PERCENT': 8,    # Minimum padding around person
-    'MAX_PADDING_PERCENT': 25,   # Maximum padding for small subjects
-    'MIN_PADDING_PIXELS': 30,    # Minimum padding in absolute pixels
-    
-    # Aspect ratio settings
-    'MAX_ASPECT_RATIO': 1.5,     # Maximum width/height ratio
-    'MIN_ASPECT_RATIO': 0.5,     # Minimum width/height ratio
-    
-    # Detection settings
-    'MIN_LANDMARK_VISIBILITY': 0.5,  # Minimum visibility for landmarks
-    'MODEL_COMPLEXITY': 1,           # MediaPipe model complexity (0, 1, or 2)
-    
-    # Debug settings
-    'SAVE_DEBUG_IMAGES': False,      # Save debug visualization
+# Configuration - Default parameters
+DEFAULT_CONFIG = {
+    'MIN_PADDING_PERCENT': 8,
+    'MAX_PADDING_PERCENT': 25,
+    'MIN_PADDING_PIXELS': 30,
+    'MAX_ASPECT_RATIO': 1.5,
+    'MIN_ASPECT_RATIO': 0.5,
+    'MIN_LANDMARK_VISIBILITY': 0.5,
+    'MODEL_COMPLEXITY': 1,
+    'SAVE_DEBUG_IMAGES': False,
 }
 
 def check_dependencies():
@@ -37,7 +34,7 @@ def check_dependencies():
         print("nix-shell -p python3 python3Packages.opencv4 python3Packages.mediapipe")
         sys.exit(1)
 
-def calculate_padding(bbox, img_shape, config=CONFIG):
+def calculate_padding(bbox, img_shape, config):
     """Calculate padding with configurable parameters."""
     x1, y1, x2, y2 = bbox
     img_height, img_width = img_shape[:2]
@@ -83,8 +80,65 @@ def calculate_padding(bbox, img_shape, config=CONFIG):
     
     return [x1_pad, y1_pad, x2_pad, y2_pad]
 
-def crop_person(image_path, config=CONFIG):
+def make_backup(file_path, backup_pattern=None):
+    """Create a backup of the file using the specified pattern."""
+    if backup_pattern is None:
+        # Default backup pattern: filename.ext.YYYY-MM-DD_HHMMSS.bak
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        backup_path = f"{file_path}.{timestamp}.bak"
+    else:
+        # Replace patterns in backup_pattern
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        dirname = os.path.dirname(file_path)
+        basename = os.path.basename(file_path)
+        name, ext = os.path.splitext(basename)
+        backup_path = backup_pattern.format(
+            path=file_path,
+            dir=dirname if dirname else '.',
+            name=name,
+            ext=ext,
+            timestamp=timestamp
+        )
+        
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(backup_path), exist_ok=True)
+    
+    shutil.copy2(file_path, backup_path)
+    return backup_path
+
+def get_output_path(input_path, output_pattern=None, in_place=False):
+    """Generate output path based on pattern or in-place flag."""
+    if in_place:
+        return input_path
+    
+    if output_pattern is None:
+        # Default pattern: add _cropped before extension
+        base, ext = os.path.splitext(input_path)
+        return f"{base}_cropped{ext}"
+    
+    # Replace patterns in output_pattern
+    dirname = os.path.dirname(input_path)
+    basename = os.path.basename(input_path)
+    name, ext = os.path.splitext(basename)
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    
+    output_path = output_pattern.format(
+        path=input_path,
+        dir=dirname if dirname else '.',
+        name=name,
+        ext=ext,
+        timestamp=timestamp
+    )
+    
+    # Create directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    return output_path
+
+def crop_person(image_path, output_path, config=None):
     """Detect and crop person from image using configurable settings."""
+    if config is None:
+        config = DEFAULT_CONFIG.copy()
+    
     # Initialize MediaPipe Pose
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
@@ -104,7 +158,7 @@ def crop_person(image_path, config=CONFIG):
     results = pose.process(img_rgb)
     
     if not results.pose_landmarks:
-        print("No person detected in the image")
+        print(f"No person detected in: {image_path}")
         return None
     
     # Get bounding box from visible landmarks
@@ -122,7 +176,7 @@ def crop_person(image_path, config=CONFIG):
             visible_y_coords.append(y)
     
     if not visible_x_coords:
-        print("No visible landmarks detected")
+        print(f"No visible landmarks detected in: {image_path}")
         return None
     
     # Calculate bounding box
@@ -138,53 +192,109 @@ def crop_person(image_path, config=CONFIG):
     x1, y1, x2, y2 = padded_box
     cropped_img = img[y1:y2, x1:x2]
     
-    # Save results
-    base_name = os.path.splitext(image_path)[0]
-    output_path = f"{base_name}_cropped.jpg"
+    # Save cropped image
     cv2.imwrite(output_path, cropped_img)
-    
-    # Save debug visualization if enabled
-    if config['SAVE_DEBUG_IMAGES']:
-        debug_img = img.copy()
-        # Original detection
-        cv2.rectangle(debug_img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        # Padded crop area
-        cv2.rectangle(debug_img, (int(padded_box[0]), int(padded_box[1])), 
-                     (int(padded_box[2]), int(padded_box[3])), (0, 0, 255), 2)
-        cv2.imwrite(f"{base_name}_debug.jpg", debug_img)
-    
     pose.close()
+    
     return output_path
+
+def process_files(paths, args):
+    """Process multiple files or directories."""
+    # Collect all image files
+    image_files = []
+    for path in paths:
+        if os.path.isdir(path):
+            # Process all images in directory
+            for ext in ('*.jpg', '*.jpeg', '*.png'):
+                image_files.extend(glob.glob(os.path.join(path, '**', ext), recursive=True))
+        elif os.path.isfile(path):
+            image_files.append(path)
+        else:
+            print(f"Warning: Path not found: {path}")
+    
+    if not image_files:
+        print("No image files found to process")
+        return
+    
+    # Configure padding
+    config = DEFAULT_CONFIG.copy()
+    if args.padding is not None:
+        config['MIN_PADDING_PERCENT'] = args.padding
+        config['MAX_PADDING_PERCENT'] = args.padding
+    
+    # Process each image
+    success_count = 0
+    for input_path in image_files:
+        # Generate output path
+        output_path = get_output_path(input_path, args.output_pattern, args.in_place)
+        
+        # Create backup if requested
+        if args.backup_pattern is not None:
+            backup_path = make_backup(input_path, args.backup_pattern)
+            print(f"Created backup: {backup_path}")
+        
+        # Process image
+        try:
+            result = crop_person(input_path, output_path, config)
+            if result:
+                print(f"Processed: {input_path} -> {output_path}")
+                success_count += 1
+        except Exception as e:
+            print(f"Error processing {input_path}: {str(e)}")
+    
+    print(f"\nProcessed {success_count} of {len(image_files)} files successfully")
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Detect and crop person from images with configurable padding.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Process a single image with 10% padding
+  %(prog)s input.jpg --padding 10
+
+  # Process multiple images in-place with backups
+  %(prog)s *.jpg --in-place --backup-pattern "{dir}/backups/{name}{ext}.{timestamp}"
+
+  # Process all images in a directory with custom output pattern
+  %(prog)s photos/ --output-pattern "output/{name}_crop{ext}"
+
+Pattern variables:
+  {path}      Full original path
+  {dir}       Directory path
+  {name}      Filename without extension
+  {ext}       File extension (with dot)
+  {timestamp} Current timestamp (YYYY-MM-DD_HHMMSS)
+        """
+    )
+    
+    parser.add_argument('paths', nargs='+',
+                      help='Input image files or directories')
+    
+    parser.add_argument('--padding', type=float,
+                      help='Fixed padding percentage (overrides min/max padding)')
+    
+    parser.add_argument('--output-pattern',
+                      help='Pattern for output filenames')
+    
+    parser.add_argument('--backup-pattern',
+                      help='Pattern for backup filenames')
+    
+    parser.add_argument('--in-place', action='store_true',
+                      help='Modify files in-place (requires --backup-pattern)')
+    
+    args = parser.parse_args()
+    
+    # Validate in-place editing requires backup
+    if args.in_place and not args.backup_pattern:
+        parser.error("--in-place requires --backup-pattern")
+    
+    return args
 
 def main():
     check_dependencies()
-    
-    if len(sys.argv) < 2:
-        print("Usage: ./script.py <image_path> [min_padding_percent]")
-        print("Edit the CONFIG dictionary at the top of the script to adjust other parameters")
-        sys.exit(1)
-    
-    image_path = sys.argv[1]
-    
-    # Allow override of minimum padding from command line
-    if len(sys.argv) > 2:
-        CONFIG['MIN_PADDING_PERCENT'] = float(sys.argv[2])
-    
-    # Enable debug images if DEBUG environment variable is set
-    if os.environ.get('DEBUG', '0') == '1':
-        CONFIG['SAVE_DEBUG_IMAGES'] = True
-    
-    if not os.path.exists(image_path):
-        print(f"Error: Image file not found: {image_path}")
-        sys.exit(1)
-    
-    output_path = crop_person(image_path, CONFIG)
-    
-    if output_path:
-        print(f"Successfully created: {output_path}")
-    else:
-        print("Failed to process image")
-        sys.exit(1)
+    args = parse_args()
+    process_files(args.paths, args)
 
 if __name__ == "__main__":
     main()
