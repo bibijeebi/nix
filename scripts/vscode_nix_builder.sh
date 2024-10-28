@@ -80,7 +80,7 @@ if [ $QUIET -eq 0 ]; then
 fi
 
 cat << EOF
-pkgs.vscode-utils.buildVscodeMarketplaceExtension {
+$PUBLISHER.$NAME = pkgs.vscode-utils.buildVscodeMarketplaceExtension {
   mktplcRef = {
     publisher = "$PUBLISHER";
     name = "$NAME";
