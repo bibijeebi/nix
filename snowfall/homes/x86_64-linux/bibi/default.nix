@@ -95,59 +95,46 @@
       };
     };
     vscode = {
-      enable = false;
+      enable = true;
       extensions = with pkgs.vscode-extensions; [
+        artdiniz.quitcontrol-vscode
         bbenoist.nix
+        berberman.vscode-cabal-fmt
         bmalehorn.vscode-fish
         catppuccin.catppuccin-vsc
         catppuccin.catppuccin-vsc-icons
         continue.continue
         davidanson.vscode-markdownlint
         dbaeumer.vscode-eslint
+        dracula-theme.theme-dracula
+        dustypomerleau.rust-syntax
         foxundermoon.shell-format
         haskell.haskell
+        jnoortheen.nix-ide
         justusadam.language-haskell
         kamadorueda.alejandra
+        kenhowardpdx.vscode-gist
+        lacroixdavid1.vscode-format-context-menu
+        mattn.lisp
+        mikoz.black-py
+        mkhl.direnv
         ms-python.black-formatter
         ms-python.debugpy
         ms-python.isort
         ms-python.python
         ms-python.vscode-pylance
-        vscode-org-mode.org-mode
-        qcz.text-power-tools
-
-        mvllow.rose-pine
-        bbenoist.nix
-        kamadorueda.alejandra
-        mikoz.black-py
-        ms-python.debugpy
-        ms-python.python
-        ms-python.vscode-pylance
-        ms-python.isort
-        qcz.text-power-tools
-        timonwong.shellcheck
-        foxundermoon.shell-format
-        davidanson.vscode-markdownlint
         ms-vscode.powershell
-        justusadam.language-haskell
-        berberman.vscode-cabal-fmt
-        haskell.haskell
-        tamasfe.even-better-toml
-        yib.rust-bundle
-        serayuzgur.crates
-        dustypomerleau.rust-syntax
-        artdiniz.quitcontrol-vscode
-        dracula-theme.theme-dracula
-        redhat.vscode-yaml
-        mkhl.direnv
-        kenhowardpdx.vscode-gist
-        lacroixdavid1.vscode-format-context-menu
-        mattn.lisp
-        natqe.reload
         ms-vscode.vscode-typescript-next
-        jnoortheen.nix-ide
+        mvllow.rose-pine
+        natqe.reload
+        qcz.text-power-tools
+        redhat.vscode-yaml
         rust-lang.rust-analyzer
-        bmalehorn.vscode-fish
+        serayuzgur.crates
+        tamasfe.even-better-toml
+        timonwong.shellcheck
+        vscode-org-mode.org-mode
+        yib.rust-bundle
       ];
     };
     bat.enable = true;
