@@ -116,9 +116,28 @@
     };
 
     vscode = {
-      enable = true;
+      enable = false;
       extensions = with pkgs.vscode-extensions; [
+        bbenoist.nix
+        bmalehorn.vscode-fish
+        catppuccin.catppuccin-vsc
+        catppuccin.catppuccin-vsc-icons
+        continue.continue
+        davidanson.vscode-markdownlint
+        dbaeumer.vscode-eslint
+        foxundermoon.shell-format
+        haskell.haskell
+        justusadam.language-haskell
+        kamadorueda.alejandra
+        ms-python.black-formatter
+        ms-python.debugpy
+        ms-python.isort
+        ms-python.python
+        ms-python.vscode-pylance
+        # internal package
         vscode-org-mode.org-mode
+        # marketplace package
+        qcz.text-power-tools
       ];
     };
 
