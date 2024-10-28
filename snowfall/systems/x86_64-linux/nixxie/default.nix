@@ -290,6 +290,7 @@ in {
     coreutils
     curl
     deadnix
+    direnv
     dunst
     emacs
     exploitdb
@@ -327,9 +328,12 @@ in {
     mpv
     neovim
     networkmanagerapplet
+    nix-direnv
     nix-init
     nix-output-monitor
+    nix-prefetch-github
     nmap
+    node2nix
     nodejs
     obsidian
     openvpn
@@ -386,6 +390,7 @@ in {
     wordlists
     xdg-utils
     xfce.thunar
+    yarn
     zip
     zoxide
   ];

@@ -8,6 +8,7 @@
       url = "github:snowfallorg/lib";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
     snowfall-flake = {
       url = "github:snowfallorg/flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -24,7 +25,8 @@
     erosanix.url = "github:emmanuelrosa/erosanix";
   };
 
-  outputs = inputs:
+  outputs = inputs: let
+  in
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
       src = ./.;

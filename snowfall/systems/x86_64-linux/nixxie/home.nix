@@ -44,43 +44,43 @@
         t = "task";
         ya = "yazi";
       };
-      plugins = [
+      plugins = with pkgs.fishPlugins; [
         # Navigation
         {
           name = "z";
-          src = pkgs.fishPlugins.z.src;
+          src = z.src;
         }
         {
           name = "fzf-fish";
-          src = pkgs.fishPlugins.fzf-fish.src;
+          src = fzf-fish.src;
         }
         # Editing
         {
           name = "autopair";
-          src = pkgs.fishPlugins.autopair.src;
+          src = autopair.src;
         }
         {
           name = "sponge";
-          src = pkgs.fishPlugins.sponge.src;
+          src = sponge.src;
         }
         # Git integration
         {
           name = "git-abbr";
-          src = pkgs.fishPlugins.git-abbr.src;
+          src = git-abbr.src;
         }
         # Utilities
         {
           name = "fish-you-should-use";
-          src = pkgs.fishPlugins.fish-you-should-use.src;
+          src = fish-you-should-use.src;
         }
         {
           name = "done";
-          src = pkgs.fishPlugins.done.src;
+          src = done.src;
         }
         # Theme
         {
           name = "tide";
-          src = pkgs.fishPlugins.tide.src;
+          src = tide.src;
         }
       ];
     };
