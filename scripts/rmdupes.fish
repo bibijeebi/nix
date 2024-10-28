@@ -1,5 +1,5 @@
 function rmdupes --description "Remove duplicate files using fclones"
-    argparse 'h/help' -- $argv
+    argparse h/help -- $argv
     or return
 
     if set -q _flag_help

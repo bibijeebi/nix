@@ -97,6 +97,12 @@
     vscode = {
       enable = true;
       extensions = with pkgs.vscode-extensions; [
+        # ms-python.black-formatter
+        # ms-python.debugpy
+        # ms-python.isort
+        # ms-python.python
+        # ms-vscode.powershell
+        # yib.rust-bundle
         artdiniz.quitcontrol-vscode
         bbenoist.nix
         berberman.vscode-cabal-fmt
@@ -118,34 +124,16 @@
         mattn.lisp
         mikoz.black-py
         mkhl.direnv
-        # ms-python.black-formatter
-        ms-python.debugpy
-        ms-python.isort
-        # ms-python.python
         ms-python.vscode-pylance
-        ms-vscode.powershell
         ms-vscode.vscode-typescript-next
         mvllow.rose-pine
         natqe.reload
         qcz.text-power-tools
         redhat.vscode-yaml
         rust-lang.rust-analyzer
-        serayuzgur.crates
         tamasfe.even-better-toml
         timonwong.shellcheck
-        vscode-org-mode.org-mode.overrideAttrs
-        (oldAttrs: {
-          postInstall = let
-            patch = final.fetchurl {
-              url = "https://gist.githubusercontent.com/bibijeebi/cb84102cd197e63a7d7a8d28f117e6ca/raw/02929a3574291bc41fc6435654583fe63e2a0abb/vscode-org-mode-add-nix-syntaxes.patch";
-              sha256 = lib.fakeSha256;
-            };
-          in ''
-            patch -p1 --directory=$out/$installPrefix < ${patch}
-            ${oldAttrs.postInstall}
-          '';
-        })
-        # yib.rust-bundle
+        vscode-org-mode.org-mode
       ];
     };
     bat.enable = true;

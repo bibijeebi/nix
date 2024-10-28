@@ -6,8 +6,8 @@ set -euo pipefail
 
 # Check if URL argument is provided
 if [ $# -ne 1 ]; then
-    echo "Usage: $0 <url>"
-    exit 1
+	echo "Usage: $0 <url>"
+	exit 1
 fi
 
 url=$1
@@ -19,15 +19,15 @@ tmp_dir=$(mktemp -d)
 trap 'rm -rf "$tmp_dir"' EXIT
 
 curl -sL "$url" |
-    pup 'a attr{href}' |
-    rg '^/[^/]+' |
-    sort -u | # Remove duplicates
-    parallel \
-        --progress \
-        --jobs 4 \
-        --keep-order \
-        --joblog "$tmp_dir/parallel.log" \
-        "curl -sL '${base_url}{}' | aichat --no-stream \"$prompt\" > \"$tmp_dir/{#}.md\""
+	pup 'a attr{href}' |
+	rg '^/[^/]+' |
+	sort -u | # Remove duplicates
+	parallel \
+		--progress \
+		--jobs 4 \
+		--keep-order \
+		--joblog "$tmp_dir/parallel.log" \
+		"curl -sL '${base_url}{}' | aichat --no-stream \"$prompt\" > \"$tmp_dir/{#}.md\""
 
 # Combine all markdown files
 cat "$tmp_dir"/*.md >combined_output.md

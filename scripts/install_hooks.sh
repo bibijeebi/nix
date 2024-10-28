@@ -10,19 +10,19 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 log_error() {
-    echo -e "${RED}ERROR:${NC} $1"
+	echo -e "${RED}ERROR:${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}SUCCESS:${NC} $1"
+	echo -e "${GREEN}SUCCESS:${NC} $1"
 }
 
 log_warning() {
-    echo -e "${YELLOW}WARNING:${NC} $1"
+	echo -e "${YELLOW}WARNING:${NC} $1"
 }
 
 # pre-commit hook
-cat > .git/hooks/pre-commit << 'EOF'
+cat >.git/hooks/pre-commit <<'EOF'
 #!/usr/bin/env bash
 
 # 1. Check for Nix syntax errors
@@ -70,7 +70,7 @@ exit 0
 EOF
 
 # pre-push hook
-cat > .git/hooks/pre-push << 'EOF'
+cat >.git/hooks/pre-push <<'EOF'
 #!/usr/bin/env bash
 
 # 1. Full flake check
@@ -115,7 +115,7 @@ exit 0
 EOF
 
 # post-merge hook
-cat > .git/hooks/post-merge << 'EOF'
+cat >.git/hooks/post-merge <<'EOF'
 #!/usr/bin/env bash
 
 # 1. Check if flake.nix or flake.lock changed
@@ -131,7 +131,7 @@ exit 0
 EOF
 
 # Install script
-cat > install-hooks.sh << 'EOF'
+cat >install-hooks.sh <<'EOF'
 #!/usr/bin/env bash
 
 # Make all hooks executable

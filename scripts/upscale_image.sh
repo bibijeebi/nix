@@ -6,8 +6,8 @@ set -euo pipefail
 
 # Validate input
 if [ $# -ne 1 ]; then
-    notify-send "Error" "Usage: $0 <image_path>"
-    exit 1
+	notify-send "Error" "Usage: $0 <image_path>"
+	exit 1
 fi
 
 # Initialize variables
@@ -24,8 +24,8 @@ cp "$image_path" "$backup_path/${name}_${timestamp}.${extension}"
 
 # Upscale image
 realesrgan-ncnn-vulkan \
-    -i "$image_path" \
-    -o "$image_path" \
-    -n realesrgan-x4plus
+	-i "$image_path" \
+	-o "$image_path" \
+	-n realesrgan-x4plus
 
 notify-send "Success" "Image upscaled and backup created"

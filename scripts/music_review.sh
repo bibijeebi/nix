@@ -12,7 +12,7 @@ OPENAI_API_KEY="$(cat ~/.openai-api-key)"
 VIDEO_JSON=$(yt-dlp -j "$VIDEO_URL")
 
 MESSAGE="$(
-  cat <<EOF
+	cat <<EOF
 You will be given a thumbnail image and JSON data obtained from running yt-dlp -j on a video of a music performance. Your task is to analyze this data and determine the title of the piece, the composer, and the event setting (e.g., concert hall, festival, etc.).
 
 Here is the JSON data:
@@ -48,10 +48,10 @@ EOF
 )"
 
 VIDEO_METADATA=$(
-  curl https://openrouter.ai/api/v1/chat/completions \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $OPENAI_API_KEY" \
-    -d '{
+	curl https://openrouter.ai/api/v1/chat/completions \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer $OPENAI_API_KEY" \
+		-d '{
           "model": "gpt-4o",
           "messages": [
             {
@@ -75,7 +75,7 @@ VIDEO_METADATA=$(
 )
 
 MESSAGE="$(
-  cat <<EOF
+	cat <<EOF
 You are analyzing the following music performance:
 
 $VIDEO_METADATA
@@ -92,9 +92,9 @@ EOF
 )"
 
 curl "https://api.openai.com/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $OPENAI_API_KEY" \
-  --data-binary '@-' <<EOF
+	-H "Content-Type: application/json" \
+	-H "Authorization: Bearer $OPENAI_API_KEY" \
+	--data-binary '@-' <<EOF
 {
   "model": "gpt-4o-audio-preview",
   "modalities": ["text"],

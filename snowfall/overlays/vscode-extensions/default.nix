@@ -21,7 +21,7 @@
             };
           in ''
             patch -p1 --directory=$out/$installPrefix < ${patch}
-            ${oldAttrs.postInstall}
+            ${oldAttrs.postInstall or ""}
           '';
         });
       mikoz.black-py = prev.vscode-utils.buildVscodeMarketplaceExtension {
