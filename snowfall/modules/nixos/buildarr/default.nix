@@ -6,9 +6,7 @@
 }:
 with lib; let
   cfg = config.services.buildarr;
-
-  # Import your buildarr derivation
-  buildarrPkg = pkgs.internal.buildarr;
+  configFile = "${cfg.dataDir}/buildarr.yml";
 
   # Helper function to generate service config
   mkServiceConfig = name: serviceCfg: {
@@ -17,8 +15,7 @@ with lib; let
     settings = serviceCfg.settings;
   };
 
-  # Convert Nix config to YAML for buildarr
-  mkBuildarrConfig = {
+  builtConfig = {
     buildarr = {
       watch_config = cfg.watchConfig;
       update_days = cfg.updateDays;
@@ -29,6 +26,28 @@ with lib; let
     radarr = optionalAttrs (cfg.radarr != null) (mkServiceConfig "radarr" cfg.radarr);
     prowlarr = optionalAttrs (cfg.prowlarr != null) (mkServiceConfig "prowlarr" cfg.prowlarr);
     jellyseerr = optionalAttrs (cfg.jellyseerr != null) (mkServiceConfig "jellyseerr" cfg.jellyseerr);
+  };
+
+  serviceOptions = {
+    hostname = mkOption {
+      type = types.str;
+      default = "localhost";
+    };
+    port = mkOption {
+      type = types.port;
+      default = 8989; # Will be overridden
+    };
+    protocol = mkOption {
+      type = types.enum ["http" "https"];
+      default = "http";
+    };
+    apiKey = mkOption {
+      type = types.str;
+    };
+    settings = mkOption {
+      type = types.attrs;
+      default = {};
+    };
   };
 in {
   options.services.buildarr = {
@@ -78,27 +97,11 @@ in {
 
     sonarr = mkOption {
       type = types.nullOr (types.submodule {
-        options = {
-          hostname = mkOption {
-            type = types.str;
-            default = "localhost";
+        options =
+          serviceOptions
+          // {
+            port.default = 8989;
           };
-          port = mkOption {
-            type = types.port;
-            default = 8989;
-          };
-          protocol = mkOption {
-            type = types.enum ["http" "https"];
-            default = "http";
-          };
-          apiKey = mkOption {
-            type = types.str;
-          };
-          settings = mkOption {
-            type = types.attrs;
-            default = {};
-          };
-        };
       });
       default = null;
       description = "Sonarr configuration";
@@ -106,27 +109,11 @@ in {
 
     radarr = mkOption {
       type = types.nullOr (types.submodule {
-        options = {
-          hostname = mkOption {
-            type = types.str;
-            default = "localhost";
+        options =
+          serviceOptions
+          // {
+            port.default = 7878;
           };
-          port = mkOption {
-            type = types.port;
-            default = 7878;
-          };
-          protocol = mkOption {
-            type = types.enum ["http" "https"];
-            default = "http";
-          };
-          apiKey = mkOption {
-            type = types.str;
-          };
-          settings = mkOption {
-            type = types.attrs;
-            default = {};
-          };
-        };
       });
       default = null;
       description = "Radarr configuration";
@@ -134,15 +121,11 @@ in {
 
     prowlarr = mkOption {
       type = types.nullOr (types.submodule {
-        options = {
-          hostname = mkOption {
-            type = types.str;
-            default = "localhost";
+        options =
+          serviceOptions
+          // {
+            port.default = 9696;
           };
-          apiKey = mkOption {
-            type = types.str;
-          };
-        };
       });
       default = null;
       description = "Prowlarr configuration";
@@ -150,15 +133,11 @@ in {
 
     jellyseerr = mkOption {
       type = types.nullOr (types.submodule {
-        options = {
-          hostname = mkOption {
-            type = types.str;
-            default = "localhost";
+        options =
+          serviceOptions
+          // {
+            port.default = 5055;
           };
-          apiKey = mkOption {
-            type = types.str;
-          };
-        };
       });
       default = null;
       description = "Jellyseerr configuration";
@@ -177,25 +156,22 @@ in {
       wantedBy = ["multi-user.target"];
 
       preStart = ''
-        # Generate buildarr config file
-        ${pkgs.yq}/bin/yq -y . > ${cfg.configFile} << EOF
-        ${builtins.toJSON mkBuildarrConfig}
+        ${pkgs.yq}/bin/yq -y . > ${configFile} << EOF
+        ${builtins.toJSON builtConfig}
         EOF
-
-        # Set correct permissions
-        chown ${cfg.user}:${cfg.group} ${cfg.configFile}
-        chmod 600 ${cfg.configFile}
+        chmod 600 ${configFile}
       '';
 
       serviceConfig = {
         Type = "simple";
         User = cfg.user;
         Group = cfg.group;
-        ExecStart = "${buildarrPkg}/bin/buildarr --config ${cfg.configFile} daemon";
+        # Updated ExecStart to use correct CLI syntax
+        ExecStart = "${pkgs.internal.buildarr}/bin/buildarr daemon ${configFile}";
         Restart = "on-failure";
         RestartSec = "10s";
 
-        # Hardening options (retained from your original config)
+        # Hardening options
         NoNewPrivileges = true;
         ProtectSystem = "strict";
         ProtectHome = true;
@@ -210,10 +186,7 @@ in {
         MemoryDenyWriteExecute = true;
         LockPersonality = true;
 
-        # Required directories
-        ReadWritePaths = [
-          cfg.dataDir
-        ];
+        ReadWritePaths = [cfg.dataDir];
       };
     };
 
