@@ -195,10 +195,5 @@ in {
         chmod 600 ${cfg.configFile}
       '';
     };
-
-    # Disable the standard *arr services since we're managing them through buildarr
-    services.sonarr.enable = mkIf (cfg.sonarr != null) false;
-    services.radarr.enable = mkIf (cfg.radarr != null) false;
-    services.prowlarr.enable = mkIf (cfg.prowlarr != null) false;
   };
 }
