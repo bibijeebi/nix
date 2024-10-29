@@ -1,24 +1,24 @@
 {
   lib,
+  python311,
   fetchPypi,
-  python3Packages,
-  ...
 }:
-python3Packages.buildPythonApplication rec {
+python311.pkgs.buildPythonApplication rec {
   pname = "buildarr";
   version = "0.8.0b1";
-  format = "pyproject";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
     hash = "sha256-jUepr+7US5FLayBq+OQ9SivkxfaDu5fpo044TKeS6e4=";
   };
 
-  nativeBuildInputs = with python3Packages; [
-    poetry-core
+  build-system = [
+    python311.pkgs.setuptools
+    python311.pkgs.setuptools-scm
   ];
 
-  propagatedBuildInputs = with python3Packages; [
+  dependencies = with python311.pkgs; [
     aenum
     click
     importlib-metadata
@@ -31,13 +31,15 @@ python3Packages.buildPythonApplication rec {
     watchdog
   ];
 
-  pythonImportsCheck = ["buildarr"];
+  pythonImportsCheck = [
+    "buildarr"
+  ];
 
-  meta = with lib; {
+  meta = {
     description = "Constructs and configures Arr PVR stacks";
-    homepage = "https://pypi.org/project/${pname}";
-    license = licenses.gpl3Only;
+    homepage = "https://pypi.org/project/buildarr/";
+    license = lib.licenses.gpl3Only;
     maintainers = [];
-    mainProgram = pname;
+    mainProgram = "buildarr";
   };
 }

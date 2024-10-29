@@ -1,10 +1,11 @@
 {
+  python311,
   lib,
   fetchPypi,
-  python3Packages,
+  radarr-py,
   ...
 }:
-python3Packages.buildPythonApplication rec {
+python311.pkgs.buildPythonApplication rec {
   pname = "buildarr-radarr";
   version = "0.2.6";
   format = "pyproject";
@@ -15,11 +16,11 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-CdvRVGXrMm2IXTsJmGfz2RNeEcg0EX8GNj41pcCeMpM=";
   };
 
-  nativeBuildInputs = with python3Packages; [
+  nativeBuildInputs = with python311.pkgs; [
     poetry-core
   ];
 
-  propagatedBuildInputs = with python3Packages; [
+  propagatedBuildInputs = with python311.pkgs; [
     buildarr
     packaging
     radarr-py

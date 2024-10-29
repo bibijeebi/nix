@@ -1,10 +1,10 @@
 {
+  python311,
   lib,
   fetchPypi,
-  python3Packages,
   ...
 }:
-python3Packages.buildPythonApplication rec {
+python311.pkgs.buildPythonApplication rec {
   pname = "buildarr-sonarr";
   version = "0.7.0b0";
   format = "pyproject";
@@ -15,11 +15,11 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-2DMQFDq/kZWNMytu1yCItpbpieqzrRc2kvczoB3iU/c=";
   };
 
-  nativeBuildInputs = with python3Packages; [
+  nativeBuildInputs = with python311.pkgs; [
     poetry-core
   ];
 
-  propagatedBuildInputs = with python3Packages; [
+  propagatedBuildInputs = with python311.pkgs; [
     buildarr
     json5
   ];

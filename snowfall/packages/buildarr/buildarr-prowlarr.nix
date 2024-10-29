@@ -1,10 +1,12 @@
 {
   lib,
+  python311,
   fetchPypi,
-  python3Packages,
+  buildarr-radarr,
+  buildarr-sonarr,
   ...
 }:
-python3Packages.buildPythonApplication rec {
+python311.pkgs.buildPythonApplication rec {
   pname = "buildarr-prowlarr";
   version = "0.5.3";
   format = "pyproject";
@@ -15,18 +17,18 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-v3QrQuleDxUKs46+TfQddQwbHN93WqictILVArFlG2I=";
   };
 
-  nativeBuildInputs = with python3Packages; [
+  nativeBuildInputs = with python311.pkgs; [
     poetry-core
   ];
 
-  propagatedBuildInputs = with python3Packages; [
+  propagatedBuildInputs = with python311.pkgs; [
     buildarr
     json5
     packaging
     prowlarr-py
   ];
 
-  passthru.optional-dependencies = with python3Packages; {
+  passthru.optional-dependencies = {
     radarr = [buildarr-radarr];
     sonarr = [buildarr-sonarr];
   };
