@@ -34,19 +34,7 @@ in {
 
     package = mkOption {
       type = types.package;
-      default = with pkgs.python3.pkgs;
-        buildPythonApplication {
-          pname = "buildarr";
-          version = "0.8.0b1"; # Update with actual version
-          format = "pyproject";
-
-          propagatedBuildInputs = [
-            buildarr-sonarr
-            buildarr-radarr
-            buildarr-prowlarr
-            buildarr-jellyseerr
-          ];
-        };
+      default = pkgs.internal.buildarr;
       description = "The Buildarr package to use";
     };
 
