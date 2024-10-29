@@ -8,11 +8,14 @@ with lib; let
   cfg = config.services.buildarr;
 
   # Import your buildarr derivation
-  buildarrPkg = import ./default.nix {
-    inherit lib;
-    python3 = pkgs.python3;
-    fetchPypi = pkgs.fetchFromGitHub;
-  };
+  buildarrPkg = pkgs.python3.withPackages (ps:
+    with ps; [
+      buildarr
+      buildarr-radarr
+      buildarr-sonarr
+      buildarr-prowlarr
+      buildarr-jellyseerr
+    ]);
 
   # Helper function to generate service config
   mkServiceConfig = name: serviceCfg: {
