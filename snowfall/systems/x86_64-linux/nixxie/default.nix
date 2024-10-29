@@ -5,7 +5,9 @@
 }: {
   imports = [./hardware.nix];
 
-  services.radarr-extended = {
+  disabledModules = ["services/misc/radarr.nix"];
+
+  services.radarr = {
     enable = true;
   };
 

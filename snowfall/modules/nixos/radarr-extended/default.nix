@@ -5,17 +5,17 @@
   ...
 }:
 with lib; let
-  cfg = config.services.radarr-extended;
+  cfg = config.services.radarr;
 in {
   options = {
-    services.radarr-extended = {
+    services.radarr = {
       enable = mkEnableOption "Radarr Extended, a UsetNet/BitTorrent movie downloader";
 
-      package = mkPackageOption pkgs "radarr-extended" {};
+      package = mkPackageOption pkgs "radarr" {};
 
       dataDir = mkOption {
         type = types.str;
-        default = "/var/lib/radarr-extended/.config/Radarr";
+        default = "/var/lib/radarr/.config/Radarr";
         description = "The directory where Radarr Extended stores its data files.";
       };
 
@@ -27,13 +27,13 @@ in {
 
       user = mkOption {
         type = types.str;
-        default = "radarr-extended";
+        default = "radarr";
         description = "User account under which Radarr Extended runs.";
       };
 
       group = mkOption {
         type = types.str;
-        default = "radarr-extended";
+        default = "radarr";
         description = "Group under which Radarr Extended runs.";
       };
 
@@ -149,12 +149,12 @@ in {
   };
 
   config = mkIf cfg.enable {
-    systemd.tmpfiles.settings."10-radarr-extended".${cfg.dataDir}.d = {
+    systemd.tmpfiles.settings."10-radarr".${cfg.dataDir}.d = {
       inherit (cfg) user group;
       mode = "0700";
     };
 
-    systemd.services.radarr-extended = {
+    systemd.services.radarr = {
       description = "Radarr Extended";
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
@@ -172,16 +172,18 @@ in {
       allowedTCPPorts = [7878];
     };
 
-    users.users = mkIf (cfg.user == "radarr-extended") {
-      radarr-extended = {
+    users.users = mkIf (cfg.user == "radarr") {
+      radarr = {
         group = cfg.group;
         home = cfg.dataDir;
-        uid = config.ids.uids.radarr-extended;
+        uid = config.ids.uids.radarr;
       };
     };
 
-    users.groups = mkIf (cfg.group == "radarr-extended") {
-      radarr-extended.gid = config.ids.gids.radarr-extended;
+    users.groups = mkIf (cfg.group == "radarr") {
+      radarr = {
+        gid = config.ids.gids.radarr;
+      };
     };
   };
 }
