@@ -11,6 +11,7 @@ with lib; let
   # Helper function to generate service config
   mkServiceConfig = name: serviceCfg: {
     inherit (serviceCfg) hostname port protocol;
+    instance_type = name; # Required for plugin identification
     api_key = serviceCfg.apiKey;
     settings = serviceCfg.settings;
   };
@@ -27,36 +28,32 @@ with lib; let
     prowlarr = optionalAttrs (cfg.prowlarr != null) (mkServiceConfig "prowlarr" cfg.prowlarr);
     jellyseerr = optionalAttrs (cfg.jellyseerr != null) (mkServiceConfig "jellyseerr" cfg.jellyseerr);
   };
-
-  serviceOptions = {
-    hostname = mkOption {
-      type = types.str;
-      default = "localhost";
-    };
-    port = mkOption {
-      type = types.port;
-      default = 8989; # Will be overridden
-    };
-    protocol = mkOption {
-      type = types.enum ["http" "https"];
-      default = "http";
-    };
-    apiKey = mkOption {
-      type = types.str;
-    };
-    settings = mkOption {
-      type = types.attrs;
-      default = {};
-    };
-  };
 in {
   options.services.buildarr = {
-    enable = mkEnableOption "Buildarr service";
+    enable = mkEnableOption "Buildarr service for managing *arr applications";
 
-    configFile = mkOption {
+    package = mkOption {
+      type = types.package;
+      default = with pkgs.python3.pkgs;
+        buildPythonApplication {
+          pname = "buildarr";
+          version = "0.8.0b1"; # Update with actual version
+          format = "pyproject";
+
+          propagatedBuildInputs = [
+            buildarr-sonarr
+            buildarr-radarr
+            buildarr-prowlarr
+            buildarr-jellyseerr
+          ];
+        };
+      description = "The Buildarr package to use";
+    };
+
+    dataDir = mkOption {
       type = types.str;
-      default = "/var/lib/buildarr/buildarr.yml";
-      description = "Path to Buildarr configuration file";
+      default = "/var/lib/buildarr";
+      description = "Directory for Buildarr data files";
     };
 
     watchConfig = mkOption {
@@ -75,12 +72,6 @@ in {
       type = types.listOf types.str;
       default = ["03:00"];
       description = "Times to perform updates";
-    };
-
-    dataDir = mkOption {
-      type = types.str;
-      default = "/var/lib/buildarr";
-      description = "Directory for Buildarr data files";
     };
 
     user = mkOption {
@@ -155,6 +146,10 @@ in {
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
 
+      environment = {
+        BUILDARR_LOG_LEVEL = "INFO";
+      };
+
       preStart = ''
         ${pkgs.yq}/bin/yq -y . > ${configFile} << EOF
         ${builtins.toJSON builtConfig}
@@ -166,8 +161,7 @@ in {
         Type = "simple";
         User = cfg.user;
         Group = cfg.group;
-        # Updated ExecStart to use correct CLI syntax
-        ExecStart = "${pkgs.internal.buildarr}/bin/buildarr daemon ${configFile}";
+        ExecStart = "${cfg.package}/bin/buildarr daemon ${configFile}";
         Restart = "on-failure";
         RestartSec = "10s";
 
@@ -190,21 +184,23 @@ in {
       };
     };
 
-    users.users = mkIf (cfg.user == "buildarr") {
-      buildarr = {
-        isSystemUser = true;
-        group = cfg.group;
-        home = cfg.dataDir;
+    users = {
+      users = mkIf (cfg.user == "buildarr") {
+        buildarr = {
+          isSystemUser = true;
+          group = cfg.group;
+          home = cfg.dataDir;
+        };
+      };
+
+      groups = mkIf (cfg.group == "buildarr") {
+        buildarr = {};
       };
     };
 
-    users.groups = mkIf (cfg.group == "buildarr") {
-      buildarr = {};
+    # Disable default services if managed by buildarr
+    services = mapAttrs (name: _: mkIf (cfg.${name} != null) false) {
+      inherit (config.services) sonarr radarr prowlarr jellyseerr;
     };
-
-    services.sonarr.enable = mkIf (cfg.sonarr != null) false;
-    services.radarr.enable = mkIf (cfg.radarr != null) false;
-    services.prowlarr.enable = mkIf (cfg.prowlarr != null) false;
-    services.jellyseerr.enable = mkIf (cfg.jellyseerr != null) false;
   };
 }
