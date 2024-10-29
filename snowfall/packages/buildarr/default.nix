@@ -17,8 +17,4 @@
     buildarr = callPackage ./buildarr.nix {inherit lib python fetchPypi;};
   };
 in
-  (python.pkgs.buildEnv {
-    name = "buildarr";
-    paths = builtins.attrValues packages;
-  })
-  .buildarr
+  packages.buildarr

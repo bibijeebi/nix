@@ -15,11 +15,11 @@ with python.pkgs;
     };
 
     build-system = [
-      python311.pkgs.setuptools
-      python311.pkgs.setuptools-scm
+      setuptools
+      setuptools-scm
     ];
 
-    dependencies = with python311.pkgs; [
+    dependencies = [
       aenum
       click
       importlib-metadata
