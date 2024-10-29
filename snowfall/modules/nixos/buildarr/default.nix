@@ -199,7 +199,10 @@ in {
     };
 
     # Disable default services if managed by buildarr
-    services = mapAttrs (name: _: mkIf (cfg.${name} != null) false) {
+    services = mapAttrs (name: _:
+      mkIf (cfg.${name} != null) {
+        ${name}.enable = false;
+      }) {
       inherit (config.services) sonarr radarr prowlarr jellyseerr;
     };
   };
