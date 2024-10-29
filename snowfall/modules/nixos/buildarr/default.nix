@@ -132,7 +132,37 @@ in {
       description = "Radarr configuration";
     };
 
-    # Similar options for prowlarr and jellyseerr...
+    prowlarr = mkOption {
+      type = types.nullOr (types.submodule {
+        options = {
+          hostname = mkOption {
+            type = types.str;
+            default = "localhost";
+          };
+          apiKey = mkOption {
+            type = types.str;
+          };
+        };
+      });
+      default = null;
+      description = "Prowlarr configuration";
+    };
+
+    jellyseerr = mkOption {
+      type = types.nullOr (types.submodule {
+        options = {
+          hostname = mkOption {
+            type = types.str;
+            default = "localhost";
+          };
+          apiKey = mkOption {
+            type = types.str;
+          };
+        };
+      });
+      default = null;
+      description = "Jellyseerr configuration";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -195,5 +225,10 @@ in {
         chmod 600 ${cfg.configFile}
       '';
     };
+
+    services.sonarr.enable = mkIf (cfg.sonarr != null) false;
+    services.radarr.enable = mkIf (cfg.radarr != null) false;
+    services.prowlarr.enable = mkIf (cfg.prowlarr != null) false;
+    services.jellyseerr.enable = mkIf (cfg.jellyseerr != null) false;
   };
 }
