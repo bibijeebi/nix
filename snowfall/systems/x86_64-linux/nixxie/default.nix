@@ -243,10 +243,10 @@
     brightnessctl
     btop
     burpsuite
-    haskellPackages.cabal-fmt
     cabal-install
     cabextract
     cargo
+    cliphist
     code-cursor
     coreutils
     curl
@@ -269,6 +269,7 @@
     google-chrome
     hashcat
     haskell-language-server
+    haskellPackages.cabal-fmt
     hyprshot
     imagemagick
     isort
@@ -277,6 +278,7 @@
     jsbeautifier
     kanshi
     kmod
+    libnotify
     libvirt
     light
     literate
