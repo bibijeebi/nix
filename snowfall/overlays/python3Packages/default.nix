@@ -1,183 +1,181 @@
 final: prev: {
-  pythonPackagesExtensions =
-    prev.pythonPackagesExtensions
-    ++ [
-      (python-final: python-prev: {
-        buildarr = python-prev.buildPythonApplication rec {
-          pname = "buildarr";
-          version = "0.8.0b1";
-          format = "pyproject";
+  python3 = prev.python3.override {
+    packageOverrides = python-self: python-super: {
+      buildarr = python-super.buildPythonApplication rec {
+        pname = "buildarr";
+        version = "0.8.0b1";
+        format = "pyproject";
 
-          src = final.fetchPypi {
-            inherit pname version;
-            hash = "sha256-jUepr+7US5FLayBq+OQ9SivkxfaDu5fpo044TKeS6e4=";
-          };
-
-          nativeBuildInputs = with python-final; [
-            setuptools
-            setuptools-scm
-          ];
-
-          propagatedBuildInputs = with python-final; [
-            aenum
-            click
-            importlib-metadata
-            pydantic
-            pyyaml
-            requests
-            schedule
-            stevedore
-            typing-extensions
-            watchdog
-          ];
-
-          pythonImportsCheck = ["buildarr"];
-
-          meta = with final.lib; {
-            description = "Constructs and configures Arr PVR stacks";
-            homepage = "https://pypi.org/project/${pname}";
-            license = licenses.gpl3Only;
-            maintainers = [];
-            mainProgram = pname;
-          };
+        src = prev.fetchPypi {
+          inherit pname version;
+          hash = "sha256-jUepr+7US5FLayBq+OQ9SivkxfaDu5fpo044TKeS6e4=";
         };
 
-        buildarr-sonarr = python-prev.buildPythonApplication rec {
-          pname = "buildarr-sonarr";
-          version = "0.7.0b0";
-          format = "pyproject";
+        nativeBuildInputs = with python-self; [
+          setuptools
+          setuptools-scm
+        ];
 
-          src = final.fetchPypi {
-            pname = "buildarr_sonarr";
-            inherit version;
-            hash = "sha256-2DMQFDq/kZWNMytu1yCItpbpieqzrRc2kvczoB3iU/c=";
-          };
+        propagatedBuildInputs = with python-self; [
+          aenum
+          click
+          importlib-metadata
+          pydantic
+          pyyaml
+          requests
+          schedule
+          stevedore
+          typing-extensions
+          watchdog
+        ];
 
-          nativeBuildInputs = with python-final; [
-            setuptools
-            setuptools-scm
-          ];
+        pythonImportsCheck = ["buildarr"];
 
-          propagatedBuildInputs = with python-final; [
-            buildarr
-            json5
-          ];
+        meta = with prev.lib; {
+          description = "Constructs and configures Arr PVR stacks";
+          homepage = "https://pypi.org/project/${pname}";
+          license = licenses.gpl3Only;
+          maintainers = [];
+          mainProgram = pname;
+        };
+      };
 
-          pythonImportsCheck = ["buildarr_sonarr"];
+      buildarr-sonarr = python-super.buildPythonApplication rec {
+        pname = "buildarr-sonarr";
+        version = "0.7.0b0";
+        format = "pyproject";
 
-          meta = with final.lib; {
-            description = "Sonarr PVR plugin for Buildarr";
-            homepage = "https://pypi.org/project/${pname}";
-            license = licenses.gpl3Only;
-            maintainers = [];
-            mainProgram = pname;
-          };
+        src = prev.fetchPypi {
+          pname = "buildarr_sonarr";
+          inherit version;
+          hash = "sha256-2DMQFDq/kZWNMytu1yCItpbpieqzrRc2kvczoB3iU/c=";
         };
 
-        buildarr-radarr = python-prev.buildPythonApplication rec {
-          pname = "buildarr-radarr";
-          version = "0.2.6";
-          format = "pyproject";
+        nativeBuildInputs = with python-self; [
+          setuptools
+          setuptools-scm
+        ];
 
-          src = final.fetchPypi {
-            pname = "buildarr_radarr";
-            inherit version;
-            hash = "sha256-CdvRVGXrMm2IXTsJmGfz2RNeEcg0EX8GNj41pcCeMpM=";
-          };
+        propagatedBuildInputs = with python-self; [
+          buildarr
+          json5
+        ];
 
-          nativeBuildInputs = with python-final; [
-            poetry-core
-          ];
+        pythonImportsCheck = ["buildarr_sonarr"];
 
-          propagatedBuildInputs = with python-final; [
-            buildarr
-            packaging
-            radarr-py
-          ];
+        meta = with prev.lib; {
+          description = "Sonarr PVR plugin for Buildarr";
+          homepage = "https://pypi.org/project/${pname}";
+          license = licenses.gpl3Only;
+          maintainers = [];
+          mainProgram = pname;
+        };
+      };
 
-          pythonImportsCheck = ["buildarr_radarr"];
+      buildarr-radarr = python-super.buildPythonApplication rec {
+        pname = "buildarr-radarr";
+        version = "0.2.6";
+        format = "pyproject";
 
-          meta = with final.lib; {
-            description = "Radarr movie PVR plugin for Buildarr";
-            homepage = "https://pypi.org/project/${pname}";
-            license = licenses.gpl3Only;
-            maintainers = [];
-            mainProgram = pname;
-          };
+        src = prev.fetchPypi {
+          pname = "buildarr_radarr";
+          inherit version;
+          hash = "sha256-CdvRVGXrMm2IXTsJmGfz2RNeEcg0EX8GNj41pcCeMpM=";
         };
 
-        buildarr-prowlarr = python-prev.buildPythonApplication rec {
-          pname = "buildarr-prowlarr";
-          version = "0.5.3";
-          format = "pyproject";
+        nativeBuildInputs = with python-self; [
+          poetry-core
+        ];
 
-          src = final.fetchPypi {
-            pname = "buildarr_prowlarr";
-            inherit version;
-            hash = "sha256-v3QrQuleDxUKs46+TfQddQwbHN93WqictILVArFlG2I=";
-          };
+        propagatedBuildInputs = with python-self; [
+          buildarr
+          packaging
+          radarr-py
+        ];
 
-          nativeBuildInputs = with python-final; [
-            poetry-core
-          ];
+        pythonImportsCheck = ["buildarr_radarr"];
 
-          propagatedBuildInputs = with python-final; [
-            buildarr
-            json5
-            packaging
-            prowlarr-py
-          ];
+        meta = with prev.lib; {
+          description = "Radarr movie PVR plugin for Buildarr";
+          homepage = "https://pypi.org/project/${pname}";
+          license = licenses.gpl3Only;
+          maintainers = [];
+          mainProgram = pname;
+        };
+      };
 
-          passthru.optional-dependencies = with python-final; {
-            radarr = [buildarr-radarr];
-            sonarr = [buildarr-sonarr];
-          };
+      buildarr-prowlarr = python-super.buildPythonApplication rec {
+        pname = "buildarr-prowlarr";
+        version = "0.5.3";
+        format = "pyproject";
 
-          pythonImportsCheck = ["buildarr_prowlarr"];
-
-          meta = with final.lib; {
-            description = "Prowlarr indexer manager plugin for Buildarr";
-            homepage = "https://pypi.org/project/${pname}";
-            license = licenses.gpl3Only;
-            maintainers = [];
-            mainProgram = pname;
-          };
+        src = prev.fetchPypi {
+          pname = "buildarr_prowlarr";
+          inherit version;
+          hash = "sha256-v3QrQuleDxUKs46+TfQddQwbHN93WqictILVArFlG2I=";
         };
 
-        buildarr-jellyseerr = python-prev.buildPythonApplication rec {
-          pname = "buildarr-jellyseerr";
-          version = "0.3.2";
-          format = "pyproject";
+        nativeBuildInputs = with python-self; [
+          poetry-core
+        ];
 
-          src = final.fetchPypi {
-            pname = "buildarr_jellyseerr";
-            inherit version;
-            hash = "sha256-Qq3P6rlTKYu95eUSfpK+Eyca2FWzu9A8SVc+N0JYLPg=";
-          };
+        propagatedBuildInputs = with python-self; [
+          buildarr
+          json5
+          packaging
+          prowlarr-py
+        ];
 
-          nativeBuildInputs = with python-final; [
-            poetry-core
-          ];
-
-          propagatedBuildInputs = with python-final; [
-            buildarr
-          ];
-
-          passthru.optional-dependencies = with python-final; {
-            radarr = [buildarr-radarr];
-            sonarr = [buildarr-sonarr];
-          };
-
-          pythonImportsCheck = ["buildarr_jellyseerr"];
-
-          meta = with final.lib; {
-            description = "Jellyseerr media request library application plugin for Buildarr";
-            homepage = "https://pypi.org/project/${pname}";
-            license = licenses.gpl3Only;
-            maintainers = [];
-            mainProgram = pname;
-          };
+        passthru.optional-dependencies = with python-self; {
+          radarr = [buildarr-radarr];
+          sonarr = [buildarr-sonarr];
         };
-      })
-    ];
+
+        pythonImportsCheck = ["buildarr_prowlarr"];
+
+        meta = with prev.lib; {
+          description = "Prowlarr indexer manager plugin for Buildarr";
+          homepage = "https://pypi.org/project/${pname}";
+          license = licenses.gpl3Only;
+          maintainers = [];
+          mainProgram = pname;
+        };
+      };
+
+      buildarr-jellyseerr = python-super.buildPythonApplication rec {
+        pname = "buildarr-jellyseerr";
+        version = "0.3.2";
+        format = "pyproject";
+
+        src = prev.fetchPypi {
+          pname = "buildarr_jellyseerr";
+          inherit version;
+          hash = "sha256-Qq3P6rlTKYu95eUSfpK+Eyca2FWzu9A8SVc+N0JYLPg=";
+        };
+
+        nativeBuildInputs = with python-self; [
+          poetry-core
+        ];
+
+        propagatedBuildInputs = with python-self; [
+          buildarr
+        ];
+
+        passthru.optional-dependencies = with python-self; {
+          radarr = [buildarr-radarr];
+          sonarr = [buildarr-sonarr];
+        };
+
+        pythonImportsCheck = ["buildarr_jellyseerr"];
+
+        meta = with prev.lib; {
+          description = "Jellyseerr media request library application plugin for Buildarr";
+          homepage = "https://pypi.org/project/${pname}";
+          license = licenses.gpl3Only;
+          maintainers = [];
+          mainProgram = pname;
+        };
+      };
+    };
+  };
 }
