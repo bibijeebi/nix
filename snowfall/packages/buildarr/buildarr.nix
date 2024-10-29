@@ -2,7 +2,6 @@
   lib,
   fetchPypi,
   python3Packages,
-  poetry-core,
   ...
 }:
 python3Packages.buildPythonApplication rec {
@@ -15,7 +14,7 @@ python3Packages.buildPythonApplication rec {
     hash = "sha256-jUepr+7US5FLayBq+OQ9SivkxfaDu5fpo044TKeS6e4=";
   };
 
-  nativeBuildInputs = [
+  nativeBuildInputs = with python3Packages; [
     poetry-core
   ];
 
