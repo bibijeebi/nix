@@ -36,7 +36,7 @@ in {
 
     configFile = mkOption {
       type = types.str;
-      default = "/etc/buildarr/buildarr.yml";
+      default = "/var/lib/buildarr/buildarr.yml";
       description = "Path to Buildarr configuration file";
     };
 
@@ -58,10 +58,10 @@ in {
       description = "Times to perform updates";
     };
 
-    stateDir = mkOption {
+    dataDir = mkOption {
       type = types.str;
       default = "/var/lib/buildarr";
-      description = "Directory for Buildarr state files";
+      description = "Directory for Buildarr data files";
     };
 
     user = mkOption {
@@ -166,19 +166,26 @@ in {
   };
 
   config = mkIf cfg.enable {
-    users.users.${cfg.user} = {
-      isSystemUser = true;
-      group = cfg.group;
-      home = cfg.stateDir;
-      createHome = true;
+    systemd.tmpfiles.settings."10-buildarr".${cfg.dataDir}.d = {
+      inherit (cfg) user group;
+      mode = "0750";
     };
-
-    users.groups.${cfg.group} = {};
 
     systemd.services.buildarr = {
       description = "Buildarr Service";
       after = ["network.target"];
       wantedBy = ["multi-user.target"];
+
+      preStart = ''
+        # Generate buildarr config file
+        ${pkgs.yq}/bin/yq -y . > ${cfg.configFile} << EOF
+        ${builtins.toJSON mkBuildarrConfig}
+        EOF
+
+        # Set correct permissions
+        chown ${cfg.user}:${cfg.group} ${cfg.configFile}
+        chmod 600 ${cfg.configFile}
+      '';
 
       serviceConfig = {
         Type = "simple";
@@ -188,7 +195,7 @@ in {
         Restart = "on-failure";
         RestartSec = "10s";
 
-        # Hardening options
+        # Hardening options (retained from your original config)
         NoNewPrivileges = true;
         ProtectSystem = "strict";
         ProtectHome = true;
@@ -205,24 +212,21 @@ in {
 
         # Required directories
         ReadWritePaths = [
-          cfg.stateDir
-          (dirOf cfg.configFile)
+          cfg.dataDir
         ];
       };
+    };
 
-      preStart = ''
-        # Ensure config directory exists
-        mkdir -p ${dirOf cfg.configFile}
+    users.users = mkIf (cfg.user == "buildarr") {
+      buildarr = {
+        isSystemUser = true;
+        group = cfg.group;
+        home = cfg.dataDir;
+      };
+    };
 
-        # Generate buildarr config file
-        ${pkgs.yq}/bin/yq -y . > ${cfg.configFile} << EOF
-        ${builtins.toJSON mkBuildarrConfig}
-        EOF
-
-        # Set correct permissions
-        chown ${cfg.user}:${cfg.group} ${cfg.configFile}
-        chmod 600 ${cfg.configFile}
-      '';
+    users.groups = mkIf (cfg.group == "buildarr") {
+      buildarr = {};
     };
 
     services.sonarr.enable = mkIf (cfg.sonarr != null) false;
