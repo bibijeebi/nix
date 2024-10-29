@@ -264,8 +264,11 @@
         "$mod SHIFT, 8, movetoworkspace, 8"
         "$mod SHIFT, 9, movetoworkspace, 9"
         "$mod SHIFT, 0, movetoworkspace, 10"
-        ", Print, exec, grim"
-        "SHIFT, Print, exec, grim -g \"$(slurp)\""
+        "$mod, F, fullscreen, 0"
+        ", Print, exec, grimshot save screen"
+        "SHIFT, Print, exec, grimshot save area"
+        "CTRL, Print, exec, grimshot copy screen"
+        "CTRL SHIFT, Print, exec, grimshot copy area"
       ];
       bindm = [
         "$mod, mouse:272, movewindow"
