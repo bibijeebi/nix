@@ -2,25 +2,26 @@
   lib,
   python3,
   fetchPypi,
+  internal,
 }:
 python3.pkgs.buildPythonApplication rec {
   pname = "buildarr";
-  version = "0.8.0b1";
+  version = "0.7.1";
   pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-jUepr+7US5FLayBq+OQ9SivkxfaDu5fpo044TKeS6e4=";
+    hash = "sha256-FmYFChehwNYK7D+wBujuEBl02SxdKD7UBC7jGReeqnM=";
   };
 
   build-system = [
-    python3.pkgs.setuptools
-    python3.pkgs.setuptools-scm
+    python3.pkgs.poetry-core
   ];
 
   dependencies = with python3.pkgs; [
     aenum
     click
+    internal.click-params
     importlib-metadata
     pydantic
     pyyaml

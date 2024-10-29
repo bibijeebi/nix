@@ -2,8 +2,8 @@
   lib,
   python3,
   fetchPypi,
+  internal,
 }:
-
 python3.pkgs.buildPythonApplication rec {
   pname = "buildarr-radarr";
   version = "0.2.6";
@@ -20,9 +20,9 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   dependencies = with python3.pkgs; [
-    buildarr
     packaging
-    radarr-py
+    internal.buildarr
+    internal.radarr-py
   ];
 
   pythonImportsCheck = [
@@ -33,7 +33,7 @@ python3.pkgs.buildPythonApplication rec {
     description = "Radarr movie PVR plugin for Buildarr";
     homepage = "https://pypi.org/project/buildarr-radarr";
     license = lib.licenses.gpl3Only;
-    maintainers = with lib.maintainers; [ ];
+    maintainers = [];
     mainProgram = "buildarr-radarr";
   };
 }

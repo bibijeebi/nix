@@ -2,8 +2,8 @@
   lib,
   python3,
   fetchPypi,
+  internal,
 }:
-
 python3.pkgs.buildPythonApplication rec {
   pname = "click-params";
   version = "0.5.0";
@@ -22,7 +22,7 @@ python3.pkgs.buildPythonApplication rec {
   dependencies = with python3.pkgs; [
     click
     deprecated
-    validators
+    internal.validators
   ];
 
   pythonImportsCheck = [
@@ -33,7 +33,7 @@ python3.pkgs.buildPythonApplication rec {
     description = "A bunch of useful click parameter types";
     homepage = "https://pypi.org/project/click-params";
     license = lib.licenses.asl20;
-    maintainers = with lib.maintainers; [ ];
+    maintainers = [];
     mainProgram = "click-params";
   };
 }
