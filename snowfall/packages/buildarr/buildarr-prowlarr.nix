@@ -3,6 +3,7 @@
   fetchPypi,
   python,
   prowlarr-py,
+  buildarr,
   buildarr-radarr,
   buildarr-sonarr,
   ...

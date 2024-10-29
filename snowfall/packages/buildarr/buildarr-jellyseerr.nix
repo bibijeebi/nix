@@ -20,7 +20,6 @@ with python.pkgs;
     };
 
     nativeBuildInputs = [
-      setuptools
       poetry-core
     ];
 

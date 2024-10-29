@@ -2,6 +2,7 @@
   lib,
   fetchPypi,
   python,
+  buildarr,
   ...
 }:
 with python.pkgs;
@@ -15,6 +16,11 @@ with python.pkgs;
       inherit version;
       hash = "sha256-2DMQFDq/kZWNMytu1yCItpbpieqzrRc2kvczoB3iU/c=";
     };
+
+    build-system = [
+      setuptools
+      setuptools-scm
+    ];
 
     nativeBuildInputs = [
       poetry-core
