@@ -6,12 +6,12 @@
 
 python3.pkgs.buildPythonApplication rec {
   pname = "pydantic";
-  version = "1.10.0";
+  version = "1.10.11";
   pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-4TeI/K0br16zI2hWsqmnT32saz6nyh9gpK2LrUI5z0w=";
+    hash = "sha256-9m1HnPfrMxNyxHBhS+ZRHq6W8fEgNEwl8/m7WfsbVSg=";
   };
 
   build-system = [
