@@ -15,8 +15,16 @@
   buildarr-jellyseerr = callPackage ./buildarr-jellyseerr.nix {inherit lib python fetchPypi buildarr-radarr buildarr-sonarr;};
 
   buildarr = let
-    python = python.withPackages (ps: [buildarr-radarr buildarr-sonarr buildarr-prowlarr buildarr-jellyseerr]);
+    pythonWithPackages = python.withPackages (ps: [
+      buildarr-radarr
+      buildarr-sonarr
+      buildarr-prowlarr
+      buildarr-jellyseerr
+    ]);
   in
-    callPackage ./buildarr.nix {inherit lib python fetchPypi;};
+    callPackage ./buildarr.nix {
+      inherit lib fetchPypi;
+      python = pythonWithPackages;
+    };
 in
   buildarr

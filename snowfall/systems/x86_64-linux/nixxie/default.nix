@@ -5,11 +5,7 @@
 }: {
   imports = [./hardware.nix];
 
-  disabledModules = ["services/misc/radarr.nix"];
-
-  services.radarr = {
-    enable = true;
-  };
+  services.buildarr.enable = true;
 
   # Core System Configuration
   system.stateVersion = "24.11";
