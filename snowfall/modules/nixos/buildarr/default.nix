@@ -206,8 +206,7 @@ in {
         # Required directories
         ReadWritePaths = [
           cfg.stateDir
-          dirOf
-          cfg.configFile
+          (dirOf cfg.configFile)
         ];
       };
 
