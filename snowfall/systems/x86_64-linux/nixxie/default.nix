@@ -5,7 +5,7 @@
 }: {
   imports = [./hardware.nix];
 
-  services.radarr = {
+  services.radarr-extended = {
     enable = true;
   };
 
