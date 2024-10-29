@@ -1,10 +1,10 @@
 {
   lib,
   fetchPypi,
-  python311,
+  python,
   ...
 }:
-with python311.pkgs;
+with python.pkgs;
   buildPythonApplication rec {
     pname = "prowlarr-py";
     version = "1.0.2";
