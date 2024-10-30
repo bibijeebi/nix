@@ -283,11 +283,11 @@
         "vpnconfinement": "vpnconfinement"
       },
       "locked": {
-        "lastModified": 1730322559,
-        "narHash": "sha256-796Rbt+nyqmB3N///FsSk2ywl1QQVWU0lc4AYbr9RVU=",
+        "lastModified": 1730322671,
+        "narHash": "sha256-RUHF0TRxSMGzo0i7Zy6Jb9z+B5V6hvrgQ5d/nNcuMSY=",
         "ref": "refs/heads/add-module-options",
-        "rev": "949902a20141fe3435d48d2dbc1cf503a9dfe4d8",
-        "revCount": 217,
+        "rev": "f43aceded5ef6f9f53b3bfa4764992128e9c5579",
+        "revCount": 218,
         "shallow": true,
         "type": "git",
         "url": "file:///home/bibi/nixarr"
