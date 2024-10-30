@@ -9,7 +9,7 @@
   musnix.enable = true;
 
   nixarr = {
-    enable = true;
+    enable = false;
     vpn.enable = false;
     jellyfin.enable = true;
     transmission.enable = true;
