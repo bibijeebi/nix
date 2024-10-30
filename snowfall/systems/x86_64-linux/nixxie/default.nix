@@ -11,6 +11,21 @@
 
   musnix.enable = true;
 
+  nixarr = {
+    enable = true;
+    vpn.enable = false;
+    jellyfin.enable = true;
+    transmission.enable = true;
+    sonarr.enable = true;
+    prowlarr.enable = true;
+    readarr.enable = true;
+
+    radarr = {
+      enable = true;
+      port = 5027;
+    };
+  };
+
   # Nix Configuration
   nix = {
     nixPath = ["nixpkgs=${inputs.nixpkgs}"];

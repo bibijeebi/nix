@@ -285,13 +285,13 @@
       "locked": {
         "lastModified": 1726847117,
         "narHash": "sha256-fBxizpL5SJIgzh5mIeUWghHr5437jUc+BLu8dOwnDZo=",
-        "owner": "rasmus-kirk",
+        "owner": "bibijeebi",
         "repo": "nixarr",
         "rev": "a3fad60dd2f5110536eb13f24e7529b2506ade6d",
         "type": "github"
       },
       "original": {
-        "owner": "rasmus-kirk",
+        "owner": "bibijeebi",
         "repo": "nixarr",
         "type": "github"
       }

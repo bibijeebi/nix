@@ -40,6 +40,7 @@
       in
         with pkgs.fishPlugins; [
           (mkFishPlugin z)
+          (mkFishPlugin bass)
           (mkFishPlugin fzf-fish)
           (mkFishPlugin autopair)
           (mkFishPlugin sponge)

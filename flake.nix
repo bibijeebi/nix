@@ -1,9 +1,7 @@
 {
   inputs = {
-    # Core
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    # Framework
     snowfall-lib = {
       url = "github:snowfallorg/lib";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -14,14 +12,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # System Management
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Applications
-    nixarr.url = "github:rasmus-kirk/nixarr";
+    # Working on a fork of nixarr, the original user is rasmus-kirk
+    nixarr.url = "github:bibijeebi/nixarr";
+
     erosanix.url = "github:emmanuelrosa/erosanix";
 
     musnix.url = "github:musnix/musnix";
