@@ -17,9 +17,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Working on a fork of nixarr, the original user is rasmus-kirk
-    # my branch is add-module-options
-    nixarr.url = "github:bibijeebi/nixarr?ref=add-module-options";
+    nixarr.url = "git+file:///home/bibi/nixarr?shallow=1";
 
     erosanix.url = "github:emmanuelrosa/erosanix";
 

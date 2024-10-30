@@ -1,12 +1,9 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: {
-  imports = [./hardware.nix];
+{ pkgs, inputs, ... }: {
 
-  # Core System Configuration
+  imports = [ ./hardware.nix ];
+
   system.stateVersion = "24.11";
+
   time.timeZone = "America/New_York";
 
   musnix.enable = true;
@@ -19,24 +16,25 @@
     sonarr.enable = true;
     prowlarr.enable = true;
     readarr.enable = true;
-
     radarr = {
       enable = true;
       port = 5027;
+      openFirewall = true;
+      authentication = {
+        username = "admin";
+        password = "adminadmin";
+      };
     };
   };
 
-  # Nix Configuration
   nix = {
-    nixPath = ["nixpkgs=${inputs.nixpkgs}"];
+    nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
     settings = {
       auto-optimise-store = true;
-      trusted-users = ["root" "@wheel"];
-      experimental-features = ["nix-command" "flakes"];
-      substituters = [
-        "https://cache.nixos.org"
-        "https://nix-community.cachix.org"
-      ];
+      trusted-users = [ "root" "@wheel" ];
+      experimental-features = [ "nix-command" "flakes" ];
+      substituters =
+        [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
@@ -51,7 +49,6 @@
     };
   };
 
-  # System Boot & Hardware
   boot = {
     loader = {
       systemd-boot.enable = true;
@@ -61,65 +58,45 @@
 
   hardware = {
     pulseaudio.enable = false;
-    graphics = {
-      enable = true;
-    };
+    graphics = { enable = true; };
   };
 
-  # Network Configuration
   networking = {
     hostName = "nixxie";
     networkmanager.enable = true;
   };
 
-  # Internationalization
-  i18n = let
-    locale = "en_US.UTF-8";
-  in {
-    defaultLocale = locale;
-    extraLocaleSettings = {
-      LC_ALL = locale;
-    };
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    extraLocaleSettings.LC_ALL = "en_US.UTF-8";
   };
 
   console.useXkbConfig = true;
 
-  # Desktop Environment & Display
   programs = {
-    # Window Managers
     hyprland = {
       enable = true;
       xwayland.enable = true;
     };
-
-    # Core Programs
     firefox.enable = true;
     fish.enable = true;
     thunar = {
       enable = true;
-      plugins = with pkgs.xfce; [
-        thunar-archive-plugin
-        thunar-volman
-      ];
+      plugins = with pkgs.xfce; [ thunar-archive-plugin thunar-volman ];
     };
-
-    # Development Tools
     wireshark.enable = true;
     nix-index.enable = true;
     command-not-found.enable = false;
-
-    # System Utilities
     mtr.enable = true;
     xfconf.enable = true;
+
   };
 
-  # System Services
   services = {
     xserver.xkb = {
       layout = "us";
       options = "caps:escape,terminate:ctrl_alt_bksp";
     };
-    # Desktop Services
     udisks2.enable = true;
     flatpak.enable = true;
     displayManager = {
@@ -134,8 +111,6 @@
     };
     tumbler.enable = true;
     gvfs.enable = true;
-
-    # Audio
     pipewire = {
       enable = true;
       alsa = {
@@ -144,8 +119,6 @@
       };
       pulse.enable = true;
     };
-
-    # Network Services
     printing.enable = true;
     avahi = {
       enable = true;
@@ -156,22 +129,20 @@
       enable = true;
       openFirewall = true;
     };
+
   };
 
-  # Security Configuration
   security = {
     rtkit.enable = true;
     polkit.enable = true;
     sudo.wheelNeedsPassword = false;
     pam.services.login.enableGnomeKeyring = true;
-    pam.loginLimits = [
-      {
-        domain = "@users";
-        item = "rtprio";
-        type = "-";
-        value = 1;
-      }
-    ];
+    pam.loginLimits = [{
+      domain = "@users";
+      item = "rtprio";
+      type = "-";
+      value = 1;
+    }];
     wrappers = {
       bindfs = {
         owner = "root";
@@ -180,28 +151,28 @@
         source = "${pkgs.bindfs}/bin/bindfs";
       };
     };
+
   };
 
-  # Font Configuration
-  fonts.packages = with pkgs; [
-    (nerdfonts.override {
-      fonts = [
-        "FiraCode"
-        "CascadiaCode"
-        "DaddyTimeMono"
-        "Meslo"
-        "SourceCodePro"
-        "Ubuntu"
-      ];
-    })
-  ];
+  fonts.packages = with pkgs;
+    [
+      (nerdfonts.override {
+        fonts = [
+          "FiraCode"
+          "CascadiaCode"
+          "DaddyTimeMono"
+          "Meslo"
+          "SourceCodePro"
+          "Ubuntu"
+        ];
+      })
+    ];
 
-  # Virtualization
   virtualisation = {
     libvirtd = {
       enable = true;
       qemu = {
-        vhostUserPackages = [pkgs.virtiofsd];
+        vhostUserPackages = [ pkgs.virtiofsd ];
         runAsRoot = true;
         swtpm.enable = true;
         ovmf = {
@@ -210,21 +181,21 @@
             (pkgs.OVMF.override {
               secureBoot = true;
               tpmSupport = true;
-            })
-            .fd
+            }).fd
           ];
         };
       };
     };
     docker.enable = true;
+
   };
 
   xdg.portal = {
     enable = true;
-    extraPortals = [pkgs.xdg-desktop-portal-hyprland];
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+
   };
 
-  # User Management
   users.users.bibi = {
     isNormalUser = true;
     description = "bibi";
@@ -239,9 +210,9 @@
       "fuse"
     ];
     shell = pkgs.fish;
+
   };
 
-  # System Packages
   environment.systemPackages = with pkgs; [
     (hiPrio parallel)
     aichat
@@ -370,5 +341,6 @@
     xfce.thunar
     zip
     zoxide
+
   ];
 }

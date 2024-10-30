@@ -283,18 +283,19 @@
         "vpnconfinement": "vpnconfinement"
       },
       "locked": {
-        "lastModified": 1730307425,
-        "narHash": "sha256-MBcCl/4lVwcXKsLaCHUJbL1/a64M/6Po5j727sjl6YM=",
-        "owner": "bibijeebi",
-        "repo": "nixarr",
-        "rev": "6cdcbdd972d30bd1b9d2d77671380e994917b284",
-        "type": "github"
+        "lastModified": 1730322559,
+        "narHash": "sha256-796Rbt+nyqmB3N///FsSk2ywl1QQVWU0lc4AYbr9RVU=",
+        "ref": "refs/heads/add-module-options",
+        "rev": "949902a20141fe3435d48d2dbc1cf503a9dfe4d8",
+        "revCount": 217,
+        "shallow": true,
+        "type": "git",
+        "url": "file:///home/bibi/nixarr"
       },
       "original": {
-        "owner": "bibijeebi",
-        "ref": "add-module-options",
-        "repo": "nixarr",
-        "type": "github"
+        "shallow": true,
+        "type": "git",
+        "url": "file:///home/bibi/nixarr"
       }
     },
     "nixpkgs": {
