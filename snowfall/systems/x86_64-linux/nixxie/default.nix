@@ -16,15 +16,7 @@
     sonarr.enable = true;
     prowlarr.enable = true;
     readarr.enable = true;
-    radarr = {
-      enable = true;
-      port = 5027;
-      openFirewall = true;
-      authentication = {
-        username = "admin";
-        password = "adminadmin";
-      };
-    };
+    radarr.enable = true;
   };
 
   nix = {
