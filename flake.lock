@@ -283,15 +283,16 @@
         "vpnconfinement": "vpnconfinement"
       },
       "locked": {
-        "lastModified": 1726847117,
-        "narHash": "sha256-fBxizpL5SJIgzh5mIeUWghHr5437jUc+BLu8dOwnDZo=",
+        "lastModified": 1730307425,
+        "narHash": "sha256-MBcCl/4lVwcXKsLaCHUJbL1/a64M/6Po5j727sjl6YM=",
         "owner": "bibijeebi",
         "repo": "nixarr",
-        "rev": "a3fad60dd2f5110536eb13f24e7529b2506ade6d",
+        "rev": "6cdcbdd972d30bd1b9d2d77671380e994917b284",
         "type": "github"
       },
       "original": {
         "owner": "bibijeebi",
+        "ref": "add-module-options",
         "repo": "nixarr",
         "type": "github"
       }

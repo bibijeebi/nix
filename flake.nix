@@ -18,7 +18,8 @@
     };
 
     # Working on a fork of nixarr, the original user is rasmus-kirk
-    nixarr.url = "github:bibijeebi/nixarr";
+    # my branch is add-module-options
+    nixarr.url = "github:bibijeebi/nixarr?ref=add-module-options";
 
     erosanix.url = "github:emmanuelrosa/erosanix";
 
