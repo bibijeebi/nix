@@ -9,14 +9,20 @@
   musnix.enable = true;
 
   nixarr = {
-    enable = false;
+    enable = true;
     vpn.enable = false;
     jellyfin.enable = true;
     transmission.enable = true;
     sonarr.enable = true;
     prowlarr.enable = true;
-    readarr.enable = true;
-    radarr.enable = true;
+    radarr = {
+      enable = true;
+      port = 7878;
+      authentication = {
+        useFormLogin = true;
+        disabledForLocalAddresses = true;
+      };
+    };
   };
 
   nix = {
