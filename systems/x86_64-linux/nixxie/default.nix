@@ -1,6 +1,9 @@
-{ pkgs, inputs, ... }: {
-
-  imports = [ ./hardware.nix ];
+{
+  pkgs,
+  inputs,
+  ...
+}: {
+  imports = [./hardware.nix];
 
   system.stateVersion = "24.11";
 
@@ -26,13 +29,12 @@
   };
 
   nix = {
-    nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+    nixPath = ["nixpkgs=${inputs.nixpkgs}"];
     settings = {
       auto-optimise-store = true;
-      trusted-users = [ "root" "@wheel" ];
-      experimental-features = [ "nix-command" "flakes" ];
-      substituters =
-        [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
+      trusted-users = ["root" "@wheel"];
+      experimental-features = ["nix-command" "flakes"];
+      substituters = ["https://cache.nixos.org" "https://nix-community.cachix.org"];
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
@@ -56,7 +58,7 @@
 
   hardware = {
     pulseaudio.enable = false;
-    graphics = { enable = true; };
+    graphics = {enable = true;};
   };
 
   networking = {
@@ -80,14 +82,13 @@
     fish.enable = true;
     thunar = {
       enable = true;
-      plugins = with pkgs.xfce; [ thunar-archive-plugin thunar-volman ];
+      plugins = with pkgs.xfce; [thunar-archive-plugin thunar-volman];
     };
     wireshark.enable = true;
     nix-index.enable = true;
     command-not-found.enable = false;
     mtr.enable = true;
     xfconf.enable = true;
-
   };
 
   services = {
@@ -127,7 +128,6 @@
       enable = true;
       openFirewall = true;
     };
-
   };
 
   security = {
@@ -135,12 +135,14 @@
     polkit.enable = true;
     sudo.wheelNeedsPassword = false;
     pam.services.login.enableGnomeKeyring = true;
-    pam.loginLimits = [{
-      domain = "@users";
-      item = "rtprio";
-      type = "-";
-      value = 1;
-    }];
+    pam.loginLimits = [
+      {
+        domain = "@users";
+        item = "rtprio";
+        type = "-";
+        value = 1;
+      }
+    ];
     wrappers = {
       bindfs = {
         owner = "root";
@@ -149,28 +151,26 @@
         source = "${pkgs.bindfs}/bin/bindfs";
       };
     };
-
   };
 
-  fonts.packages = with pkgs;
-    [
-      (nerdfonts.override {
-        fonts = [
-          "FiraCode"
-          "CascadiaCode"
-          "DaddyTimeMono"
-          "Meslo"
-          "SourceCodePro"
-          "Ubuntu"
-        ];
-      })
-    ];
+  fonts.packages = with pkgs; [
+    (nerdfonts.override {
+      fonts = [
+        "FiraCode"
+        "CascadiaCode"
+        "DaddyTimeMono"
+        "Meslo"
+        "SourceCodePro"
+        "Ubuntu"
+      ];
+    })
+  ];
 
   virtualisation = {
     libvirtd = {
       enable = true;
       qemu = {
-        vhostUserPackages = [ pkgs.virtiofsd ];
+        vhostUserPackages = [pkgs.virtiofsd];
         runAsRoot = true;
         swtpm.enable = true;
         ovmf = {
@@ -179,19 +179,18 @@
             (pkgs.OVMF.override {
               secureBoot = true;
               tpmSupport = true;
-            }).fd
+            })
+            .fd
           ];
         };
       };
     };
     docker.enable = true;
-
   };
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
-
+    extraPortals = [pkgs.xdg-desktop-portal-hyprland];
   };
 
   users.users.bibi = {
@@ -208,7 +207,6 @@
       "fuse"
     ];
     shell = pkgs.fish;
-
   };
 
   environment.systemPackages = with pkgs; [
@@ -339,6 +337,21 @@
     xfce.thunar
     zip
     zoxide
-
+      alejandra
+    direnv
+    git
+    gh
+    inotify-tools
+    nix-direnv
+    nix-output-monitor
+    parallel
+    mdbook
+    pandoc
+    shellcheck
+    pre-commit
+    btop
+    shfmt
+    manix
+    deadnix
   ];
 }
