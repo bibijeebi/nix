@@ -107,6 +107,9 @@ in {
       if [ -f ~/.bash_aliases ]; then
         source ~/.bash_aliases
       fi
+      # Load completion functions for Alf
+      autoload -Uz +X compinit && compinit
+      autoload -Uz +X bashcompinit && bashcompinit
     '';
 
     # Set up GitHub integration if requested
@@ -117,12 +120,5 @@ in {
           $DRY_RUN_CMD ${cfg.package}/bin/alf connect ${cfg.githubRepo}
         fi
       '');
-
-    # shellInit, promptInit, loginShellInit, interactiveShellInit
-    programs.zsh. = mkIf config.programs.zsh.enable ''
-      # Load completion functions for Alf
-      autoload -Uz +X compinit && compinit
-      autoload -Uz +X bashcompinit && bashcompinit
-    '';
   };
 }
