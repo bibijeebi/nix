@@ -56,6 +56,12 @@
           overlays = with inputs; [ sops-nix.overlays.default ];
         };
 
+        formatter = pkgs.nixfmt-rfc-style;
+
+        packages = {
+          assemblyai-cli = pkgs.callPackage ./packages/assemblyai-cli {};
+        };
+
         devShells.default = pkgs.mkShell {
           packages = lib.attrValues {
             inherit (pkgs)
