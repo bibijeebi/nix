@@ -23,10 +23,20 @@
 
     # Local
     nixarr.url = "git+file:///home/bibi/nixarr?shallow=1";
+
+    firefox-addons = {
+      url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, flake-parts, ... }:
-    flake-parts.lib.mkFlake {
+  outputs = inputs@{ flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
       imports = with inputs; [ ez-configs.flakeModule ];
 
       systems = [ "x86_64-linux" ];
@@ -45,28 +55,10 @@
         devShells.default = pkgs.mkShell {
           packages = lib.attrValues {
             inherit (pkgs)
-              cachix
-              deadnix
-              deploy-rs
-              manix
-              nix-diff
-              nix-direnv
-              nix-index
-              nix-info
-              nix-init
-              nix-melt
-              nix-output-monitor
-              nix-prefetch
-              nix-prefetch-github
-              nix-search-cli
-              nixd
-              nixfmt-rfc-style
-              nixos-generators
-              nixos-shell
-              nixtract
-              optinix
-              statix
-              ;
+              cachix deadnix deploy-rs manix nix-diff nix-direnv nix-index
+              nix-info nix-init nix-melt nix-output-monitor nix-prefetch
+              nix-prefetch-github nix-search-cli nixd nixfmt-rfc-style
+              nixos-generators nixos-shell nixtract optinix statix;
           };
         };
       };

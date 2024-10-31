@@ -1,4 +1,10 @@
-{pkgs, ...}: {
+{ezModules, inputs, pkgs, ...}: {
+  imports = with inputs; builtins.attrValues [
+    ezModules.qimgv
+    ezModules.alf
+    hyprland.homeModules.default
+  ];
+
   home = {
     stateVersion = "24.11";
     sessionVariables = {
@@ -353,41 +359,6 @@
         "wl-paste --type text --watch cliphist store" # Clipboard manager
         "wl-paste --type image --watch cliphist store"
       ];
-    };
-  };
-  xdg = let
-    mkMimeApps = type: app:
-      builtins.listToAttrs (map (t: {
-          name = t;
-          value = ["${app}.desktop"];
-        })
-        type);
-  in {
-    mime.enable = true;
-    mimeApps = {
-      enable = true;
-      defaultApplications =
-        (mkMimeApps [
-          "x-scheme-handler/about"
-          "x-scheme-handler/http"
-          "x-scheme-handler/https"
-          "x-scheme-handler/unknown"
-        ] "google-chrome")
-        // (mkMimeApps [
-          "image/jpeg"
-          "image/png"
-        ] "qimgv")
-        // (mkMimeApps [
-          "video/mkv"
-          "video/mp4"
-          "video/webm"
-        ] "mpv")
-        // {
-          "application/pdf" = ["google-chrome.desktop"];
-          "text/plain" = ["neovim.desktop"];
-          "text/html" = "google-chrome.desktop";
-          "inode/directory" = ["thunar.desktop"];
-        };
     };
   };
 }

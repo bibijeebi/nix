@@ -1,4 +1,4 @@
-{...}: final: prev: {
+final: prev: {
   vscode-insiders = (prev.vscode.override {isInsiders = true;}).overrideAttrs (oldAttrs: {
     src = builtins.fetchTarball {
       url = "https://code.visualstudio.com/sha/download?build=insider&os=linux-x64";
