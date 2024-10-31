@@ -1,4 +1,4 @@
-{...}: _final: prev: {
+final: prev: {
   qimgv = prev.qimgv.overrideAttrs (oldAttrs: {
     version = "1.0.3-alpha-128-gaeccf866";
     src = prev.fetchFromGitHub {

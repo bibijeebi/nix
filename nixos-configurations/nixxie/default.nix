@@ -1,9 +1,40 @@
 { ezModules, inputs, pkgs, ... }: {
   imports = [
-    ./hardware.nix
     ezModules.buildarr
     inputs.musnix.nixosModules.default
   ];
+
+   boot = {
+    # Kernel Modules
+    initrd = {
+      availableKernelModules = [
+        "vmd" # Intel Volume Management Device
+        "xhci_pci" # USB 3.0 Controller
+        "ahci" # SATA Controller
+        "usbhid" # USB HID Devices
+        "usb_storage" # USB Storage
+        "sd_mod" # SD Card Support
+      ];
+      kernelModules = [ ];
+    };
+    kernelModules = [ "kvm-intel" ]; # Intel KVM Support
+    extraModulePackages = [ ];
+  };
+
+   fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-uuid/7c780241-0638-42ea-9338-09721aa3852d";
+      fsType = "ext4";
+    };
+    "/boot" = {
+      device = "/dev/disk/by-uuid/94CD-4B1F";
+      fsType = "vfat";
+      options = [
+        "fmask=0077" # File permissions mask
+        "dmask=0077" # Directory permissions mask
+      ];
+    };
+  };
 
   system.stateVersion = "24.11";
 

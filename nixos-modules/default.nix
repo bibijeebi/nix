@@ -1,4 +1,4 @@
-{ inputs, modulesPath, pkgs, ... }:
+{ config, inputs, lib, modulesPath, pkgs, ... }:
 let
   systemPackages = builtins.attrValues {
     inherit (pkgs) bash coreutils home-manager pulseaudio usbutils;
@@ -7,6 +7,15 @@ in {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ../overlays ];
 
   nixpkgs.config = import ../nixpkgs-config.nix;
+
+  swapDevices = [ ]; # No swap configured
+
+  networking.useDHCP = lib.mkDefault true;
+
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+
+  hardware.cpu.intel.updateMicrocode =
+    lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   environment = {
     inherit systemPackages;

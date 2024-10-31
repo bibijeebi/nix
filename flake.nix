@@ -1,36 +1,40 @@
 {
   inputs = {
-    # Core
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-
-    # System Management
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
-    # Development
+    ante = {
+      url = "github:jfecher/ante";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        parts.follows = "flake-parts";
+      };
+    };
     devshell.url = "github:numtide/devshell";
     ez-configs.url = "github:ehllie/ez-configs";
-
-    # Audio
-    musnix.url = "github:musnix/musnix";
-
-    # Local
-    nixarr.url = "git+file:///home/bibi/nixarr?shallow=1";
-
     firefox-addons = {
       url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     hyprland = {
       url = "github:hyprwm/Hyprland";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    musnix.url = "github:musnix/musnix";
+    nixarr.url = "git+file:///home/bibi/nixarr?shallow=1";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    yazi = {
+      url = "github:sxyazi/yazi";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

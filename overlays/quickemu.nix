@@ -1,4 +1,4 @@
-{...}: _final: prev: {
+final: prev: {
   quickemu = prev.quickemu.override {
     OVMF = prev.OVMFFull.override {
       secureBoot = true;
