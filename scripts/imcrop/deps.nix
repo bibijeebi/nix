@@ -1,4 +1,5 @@
-with import <nixpkgs> {}; let
+with import <nixpkgs> { };
+let
   python = python312;
   pythonPackages = python.pkgs;
 
@@ -8,14 +9,12 @@ with import <nixpkgs> {}; let
     format = "wheel";
 
     src = fetchurl {
-      url = "https://files.pythonhosted.org/packages/5e/c1/20447696a967b07f5bf9c77cf037b5d06d26e596daf416170e6cfca79613/mediapipe-0.10.15-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
+      url =
+        "https://files.pythonhosted.org/packages/5e/c1/20447696a967b07f5bf9c77cf037b5d06d26e596daf416170e6cfca79613/mediapipe-0.10.15-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl";
       sha256 = "sha256-x/7lCI32jy86tE9ojgWe+FhZZp+DByB8vhkzenw1uLk=";
     };
 
-    nativeBuildInputs = [
-      autoPatchelfHook
-      stdenv.cc.cc.lib
-    ];
+    nativeBuildInputs = [ autoPatchelfHook stdenv.cc.cc.lib ];
 
     buildInputs = [
       stdenv.cc.cc.lib
@@ -37,7 +36,7 @@ with import <nixpkgs> {}; let
     ];
 
     doCheck = false;
-    pythonImportsCheck = ["mediapipe"];
+    pythonImportsCheck = [ "mediapipe" ];
 
     autoPatchelfIgnoreMissingDeps = true;
   };
@@ -60,21 +59,16 @@ with import <nixpkgs> {}; let
       python3.pkgs.setuptools
     ];
 
-    dependencies = with python3.pkgs; [
-      numpy
-    ];
+    dependencies = with python3.pkgs; [ numpy ];
 
-    pythonImportsCheck = [
-      "opencv_python_headless"
-    ];
+    pythonImportsCheck = [ "opencv_python_headless" ];
 
     meta = {
       description = "Wrapper package for OpenCV python bindings";
       homepage = "https://pypi.org/project/opencv-python-headless";
-      license = with lib.licenses; [asl20 mit];
-      maintainers = with lib.maintainers; [];
+      license = with lib.licenses; [ asl20 mit ];
+      maintainers = with lib.maintainers; [ ];
       mainProgram = "opencv-python-headless";
     };
   };
-in
-  python.withPackages (ps: [mediapipe opencv-python-headless])
+in python.withPackages (ps: [ mediapipe opencv-python-headless ])

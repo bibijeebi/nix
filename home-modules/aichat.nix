@@ -1,11 +1,6 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-with lib; let
-  cfg = config.programs.aichat;
+{ config, lib, pkgs, ... }:
+with lib;
+let cfg = config.programs.aichat;
 in {
   options.programs.aichat = {
     enable = mkEnableOption "aichat CLI tool";
@@ -18,15 +13,15 @@ in {
 
     settings = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       description = "Configuration options for aichat";
     };
   };
 
   config = mkIf cfg.enable {
-    home.packages = [cfg.package];
+    home.packages = [ cfg.package ];
 
     xdg.configFile."aichat/config.yaml".text =
-      lib.generators.toYAML {} cfg.settings;
+      lib.generators.toYAML { } cfg.settings;
   };
 }

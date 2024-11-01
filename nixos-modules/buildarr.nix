@@ -1,10 +1,6 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-with lib; let
+{ config, lib, pkgs, ... }:
+with lib;
+let
   cfg = config.services.buildarr;
   configFile = "${cfg.dataDir}/buildarr.yml";
 
@@ -23,10 +19,14 @@ with lib; let
       update_times = cfg.updateTimes;
     };
 
-    sonarr = optionalAttrs (cfg.sonarr != null) (mkServiceConfig "sonarr" cfg.sonarr);
-    radarr = optionalAttrs (cfg.radarr != null) (mkServiceConfig "radarr" cfg.radarr);
-    prowlarr = optionalAttrs (cfg.prowlarr != null) (mkServiceConfig "prowlarr" cfg.prowlarr);
-    jellyseerr = optionalAttrs (cfg.jellyseerr != null) (mkServiceConfig "jellyseerr" cfg.jellyseerr);
+    sonarr =
+      optionalAttrs (cfg.sonarr != null) (mkServiceConfig "sonarr" cfg.sonarr);
+    radarr =
+      optionalAttrs (cfg.radarr != null) (mkServiceConfig "radarr" cfg.radarr);
+    prowlarr = optionalAttrs (cfg.prowlarr != null)
+      (mkServiceConfig "prowlarr" cfg.prowlarr);
+    jellyseerr = optionalAttrs (cfg.jellyseerr != null)
+      (mkServiceConfig "jellyseerr" cfg.jellyseerr);
   };
 in {
   options.services.buildarr = {
@@ -52,13 +52,21 @@ in {
 
     updateDays = mkOption {
       type = types.listOf types.str;
-      default = ["monday" "tuesday" "wednesday" "thursday" "friday" "saturday" "sunday"];
+      default = [
+        "monday"
+        "tuesday"
+        "wednesday"
+        "thursday"
+        "friday"
+        "saturday"
+        "sunday"
+      ];
       description = "Days to perform updates";
     };
 
     updateTimes = mkOption {
       type = types.listOf types.str;
-      default = ["03:00"];
+      default = [ "03:00" ];
       description = "Times to perform updates";
     };
 
@@ -76,11 +84,7 @@ in {
 
     sonarr = mkOption {
       type = types.nullOr (types.submodule {
-        options =
-          serviceOptions
-          // {
-            port.default = 8989;
-          };
+        options = serviceOptions // { port.default = 8989; };
       });
       default = null;
       description = "Sonarr configuration";
@@ -88,11 +92,7 @@ in {
 
     radarr = mkOption {
       type = types.nullOr (types.submodule {
-        options =
-          serviceOptions
-          // {
-            port.default = 7878;
-          };
+        options = serviceOptions // { port.default = 7878; };
       });
       default = null;
       description = "Radarr configuration";
@@ -100,11 +100,7 @@ in {
 
     prowlarr = mkOption {
       type = types.nullOr (types.submodule {
-        options =
-          serviceOptions
-          // {
-            port.default = 9696;
-          };
+        options = serviceOptions // { port.default = 9696; };
       });
       default = null;
       description = "Prowlarr configuration";
@@ -112,11 +108,7 @@ in {
 
     jellyseerr = mkOption {
       type = types.nullOr (types.submodule {
-        options =
-          serviceOptions
-          // {
-            port.default = 5055;
-          };
+        options = serviceOptions // { port.default = 5055; };
       });
       default = null;
       description = "Jellyseerr configuration";
@@ -131,12 +123,10 @@ in {
 
     systemd.services.buildarr = {
       description = "Buildarr Service";
-      after = ["network.target"];
-      wantedBy = ["multi-user.target"];
+      after = [ "network.target" ];
+      wantedBy = [ "multi-user.target" ];
 
-      environment = {
-        BUILDARR_LOG_LEVEL = "INFO";
-      };
+      environment = { BUILDARR_LOG_LEVEL = "INFO"; };
 
       preStart = ''
         ${pkgs.yq}/bin/yq -y . > ${configFile} << EOF
@@ -161,14 +151,14 @@ in {
         PrivateDevices = true;
         ProtectKernelTunables = true;
         ProtectControlGroups = true;
-        RestrictAddressFamilies = ["AF_UNIX" "AF_INET" "AF_INET6"];
+        RestrictAddressFamilies = [ "AF_UNIX" "AF_INET" "AF_INET6" ];
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         MemoryDenyWriteExecute = true;
         LockPersonality = true;
 
-        ReadWritePaths = [cfg.dataDir];
+        ReadWritePaths = [ cfg.dataDir ];
       };
     };
 
@@ -181,9 +171,7 @@ in {
         };
       };
 
-      groups = mkIf (cfg.group == "buildarr") {
-        buildarr = {};
-      };
+      groups = mkIf (cfg.group == "buildarr") { buildarr = { }; };
     };
 
     # Disable default services if managed by buildarr

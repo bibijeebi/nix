@@ -1,12 +1,15 @@
-{ config, inputs, lib, modulesPath, pkgs, ... }:
-let
-  systemPackages = builtins.attrValues {
-    inherit (pkgs) bash coreutils home-manager pulseaudio usbutils;
-  };
-in {
-  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ../overlays ];
+{
+  config,
+  inputs,
+  lib,
+  modulesPath,
+  pkgs,
+  ...
+}:
+{
+  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
-  nixpkgs.config = import ../nixpkgs-config.nix;
+  nixpkgs.config.allowUnfree = true;
 
   swapDevices = [ ]; # No swap configured
 
@@ -14,24 +17,60 @@ in {
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
-  hardware.cpu.intel.updateMicrocode =
-    lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   environment = {
-    inherit systemPackages;
-    binSh = "${pkgs.dash}/bin/dash";
+    binsh = "${pkgs.dash}/bin/dash";
+    systemPackages = builtins.attrValues {
+      inherit (pkgs)
+        bash
+        coreutils
+        home-manager
+        pulseaudio
+        usbutils
+        ;
+    };
+  };
+
+  users.users.bibi = {
+    isNormalUser = true;
+    extraGroups = [
+      "wheel"
+      "networkmanager"
+      "docker"
+      "video"
+      "audio"
+      "input"
+    ];
+    shell = pkgs.fish;
+    hashedPassword = "$6$qUiGCyo2rV6J.F2n$LWRdYGXUC.9trlQHWFjFJPBsd.nAkktcwlJNWZAtsZIyRt02AnO713q32hSJ0QxPWYzban3ekl64r6ny.XgHT/";
   };
 
   nix = {
-    extraOptions = "experimental-features = nix-command flakes";
+    nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+    registry.nixpkgs.flake = inputs.nixpkgs;
 
     settings = {
+      auto-optimise-store = true;
       trusted-users = [ "@wheel" ];
-      trusted-substituters = [ "https://nix-community.cachix.org" ];
-      extra-substituters = [ "https://nix-community.cachix.org" ];
-      extra-trusted-public-keys = [
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+      substituters = [
+        "https://cache.nixos.org"
+        "https://nix-community.cachix.org"
+      ];
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       ];
+      trusted-substituters = [
+        "https://cache.nixos.org"
+        "https://nix-community.cachix.org"
+      ];
+      keep-outputs = true;
+      keep-derivations = true;
     };
 
     gc = {
@@ -39,15 +78,32 @@ in {
       dates = "daily";
       options = "--delete-older-than 7d";
     };
-
-    registry.nixpkgs.flake = inputs.nixpkgs;
-
-    nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
   };
 
-  fonts.packages = with pkgs; [
-    cascadia-code
-    (nerdfonts.override { fonts = [ "CascadiaCode" ]; })
+  fonts.packages = [
+    (pkgs.nerdfonts.override {
+      fonts = [
+        "BigBlueTerminal"
+        "CascadiaCode"
+        "CascadiaMono"
+        "ComicShannsMono"
+        "DaddyTimeMono"
+        "FantasqueSansMono"
+        "FiraCode"
+        "FiraMono"
+        "Gohu"
+        "HeavyData"
+        "Hermit"
+        "Meslo"
+        "OpenDyslexic"
+        "ProggyClean"
+        "ShareTechMono"
+        "SourceCodePro"
+        "Terminus"
+        "Ubuntu"
+        "UbuntuMono"
+      ];
+    })
   ];
 
   security = {
@@ -56,13 +112,21 @@ in {
     sudo = {
       enable = true;
       wheelNeedsPassword = true;
-      extraRules = [{
-        groups = [ "wheel" ];
-        commands = builtins.map (command: {
-          inherit command;
-          options = [ "NOPASSWD" ];
-        }) [ "${pkgs.systemd}/bin/shutdown" "${pkgs.systemd}/bin/reboot" ];
-      }];
+      extraRules = [
+        {
+          groups = [ "wheel" ];
+          commands =
+            builtins.map
+              (command: {
+                inherit command;
+                options = [ "NOPASSWD" ];
+              })
+              [
+                "${pkgs.systemd}/bin/shutdown"
+                "${pkgs.systemd}/bin/reboot"
+              ];
+        }
+      ];
     };
   };
 

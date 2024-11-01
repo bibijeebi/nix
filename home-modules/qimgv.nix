@@ -1,11 +1,6 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-with lib; let
-  cfg = config.programs.qimgv;
+{ config, lib, pkgs, ... }:
+with lib;
+let cfg = config.programs.qimgv;
 in {
   options.programs.qimgv = {
     enable = mkEnableOption "qimgv image viewer";
@@ -18,7 +13,7 @@ in {
 
     settings = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       example = literalExpression ''
         {
           panelPosition = "bottom";
@@ -42,7 +37,7 @@ in {
 
     keybindings = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       example = literalExpression ''
         {
           next_image = "right";
@@ -62,52 +57,43 @@ in {
       description = "Custom keybindings for qimgv";
     };
 
-    defaultApplications = mkEnableOption "Register qimgv as default image viewer";
+    defaultApplications =
+      mkEnableOption "Register qimgv as default image viewer";
   };
 
   config = mkIf cfg.enable {
-    home.packages = [cfg.package];
+    home.packages = [ cfg.package ];
 
     # qimgv stores its config in ~/.config/qimgv/qimgv.conf
     xdg.configFile."qimgv/qimgv.conf".text = let
       # Convert the settings to an INI-like format that qimgv expects
       formatValue = v:
-        if isBool v
-        then
-          (
-            if v
-            then "true"
-            else "false"
-          )
-        else toString v;
+        if isBool v then (if v then "true" else "false") else toString v;
 
       formatSection = name: attrs:
-        "[${name}]\n"
-        + concatStrings (
-          mapAttrsToList
-          (k: v: "${k}=${formatValue v}\n")
-          attrs
-        );
+        ''
+          [${name}]
+        '' + concatStrings (mapAttrsToList (k: v: ''
+          ${k}=${formatValue v}
+        '') attrs);
 
       configSections = {
         General = cfg.settings;
         Shortcuts = cfg.keybindings;
       };
 
-      configText =
-        concatStrings (mapAttrsToList formatSection
-          (filterAttrs (n: v: v != {}) configSections));
-    in
-      configText;
+      configText = concatStrings (mapAttrsToList formatSection
+        (filterAttrs (n: v: v != { }) configSections));
+    in configText;
 
     # Optionally set as default image viewer
     xdg.mimeApps = mkIf cfg.defaultApplications {
       defaultApplications = {
-        "image/jpeg" = ["qimgv.desktop"];
-        "image/png" = ["qimgv.desktop"];
-        "image/gif" = ["qimgv.desktop"];
-        "image/bmp" = ["qimgv.desktop"];
-        "image/webp" = ["qimgv.desktop"];
+        "image/jpeg" = [ "qimgv.desktop" ];
+        "image/png" = [ "qimgv.desktop" ];
+        "image/gif" = [ "qimgv.desktop" ];
+        "image/bmp" = [ "qimgv.desktop" ];
+        "image/webp" = [ "qimgv.desktop" ];
       };
     };
   };

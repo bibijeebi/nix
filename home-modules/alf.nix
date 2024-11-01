@@ -1,17 +1,13 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-with lib; let
+{ config, lib, pkgs, ... }:
+with lib;
+let
   cfg = config.programs.alf;
 
   # Type for Alf configuration file entries
   alfConfigType = with types;
-    attrsOf (oneOf [str (listOf str) (attrsOf (either str (listOf str)))]);
+    attrsOf (oneOf [ str (listOf str) (attrsOf (either str (listOf str))) ]);
 in {
-  meta.maintainers = [maintainers.fill-in-your-name];
+  meta.maintainers = [ maintainers.fill-in-your-name ];
 
   options.programs.alf = {
     enable = mkEnableOption "Alf - Your Little Bash Alias Friend";
@@ -25,7 +21,7 @@ in {
 
     settings = mkOption {
       type = alfConfigType;
-      default = {};
+      default = { };
       example = literalExpression ''
         {
           git = {
@@ -60,20 +56,16 @@ in {
   };
 
   config = mkIf cfg.enable {
-    assertions = [
-      {
-        assertion =
-          cfg.githubRepo
-          == null
-          || (builtins.match "([^/]+)/([^/]+)" cfg.githubRepo) != null;
-        message = ''
-          The githubRepo option must be in the format "username/repository".
-          Got: ${toString cfg.githubRepo}
-        '';
-      }
-    ];
+    assertions = [{
+      assertion = cfg.githubRepo == null
+        || (builtins.match "([^/]+)/([^/]+)" cfg.githubRepo) != null;
+      message = ''
+        The githubRepo option must be in the format "username/repository".
+        Got: ${toString cfg.githubRepo}
+      '';
+    }];
 
-    home.packages = [cfg.package];
+    home.packages = [ cfg.package ];
 
     # Required by Alf
     programs.bash.enable = true;
@@ -81,20 +73,18 @@ in {
     xdg.configFile."alf/alf.conf".text = let
       # Convert settings to Alf config format
       formatAliases = namespace: aliases:
-        if isString aliases
-        then "${namespace} = ${aliases}"
-        else if isList aliases
-        then "${namespace} = ${concatStringsSep " " aliases}"
+        if isString aliases then
+          "${namespace} = ${aliases}"
+        else if isList aliases then
+          "${namespace} = ${concatStringsSep " " aliases}"
         else
           concatStringsSep "\n"
           (mapAttrsToList (name: cmd: formatAliases "${namespace} ${name}" cmd)
             aliases);
-    in
-      concatStringsSep "\n" (mapAttrsToList formatAliases cfg.settings);
+    in concatStringsSep "\n" (mapAttrsToList formatAliases cfg.settings);
 
     # Source bash_aliases in shells
-    home.file.".bash_aliases".source =
-      config.lib.file.mkOutOfStoreSymlink
+    home.file.".bash_aliases".source = config.lib.file.mkOutOfStoreSymlink
       "${config.xdg.configHome}/bash_aliases";
 
     programs.bash.initExtra = ''
@@ -113,9 +103,8 @@ in {
     '';
 
     # Set up GitHub integration if requested
-    home.activation.alfSetup =
-      mkIf (cfg.githubRepo != null)
-      (lib.hm.dag.entryAfter ["writeBoundary"] ''
+    home.activation.alfSetup = mkIf (cfg.githubRepo != null)
+      (lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [[ ! -f "$HOME/.alfrc" ]] || ! grep -q "${cfg.githubRepo}" "$HOME/.alfrc"; then
           $DRY_RUN_CMD ${cfg.package}/bin/alf connect ${cfg.githubRepo}
         fi

@@ -2,9 +2,10 @@
   imports = [
     ezModules.buildarr
     inputs.musnix.nixosModules.default
+    inputs.nixarr.nixosModules.default
   ];
 
-   boot = {
+  boot = {
     # Kernel Modules
     initrd = {
       availableKernelModules = [
@@ -21,7 +22,7 @@
     extraModulePackages = [ ];
   };
 
-   fileSystems = {
+  fileSystems = {
     "/" = {
       device = "/dev/disk/by-uuid/7c780241-0638-42ea-9338-09721aa3852d";
       fsType = "ext4";
@@ -56,28 +57,6 @@
         useFormLogin = true;
         disabledForLocalAddresses = true;
       };
-    };
-  };
-
-  nix = {
-    nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
-    settings = {
-      auto-optimise-store = true;
-      trusted-users = [ "root" "@wheel" ];
-      experimental-features = [ "nix-command" "flakes" ];
-      substituters =
-        [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
-      keep-outputs = true;
-      keep-derivations = true;
-    };
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
     };
   };
 
@@ -183,20 +162,6 @@
     };
   };
 
-  fonts.packages = with pkgs;
-    [
-      (nerdfonts.override {
-        fonts = [
-          "FiraCode"
-          "CascadiaCode"
-          "DaddyTimeMono"
-          "Meslo"
-          "SourceCodePro"
-          "Ubuntu"
-        ];
-      })
-    ];
-
   virtualisation = {
     libvirtd = {
       enable = true;
@@ -222,166 +187,4 @@
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
   };
-
-  users.users.bibi = {
-    isNormalUser = true;
-    description = "bibi";
-    extraGroups = [
-      "audio"
-      "docker"
-      "fuse"
-      "input"
-      "libvirtd"
-      "networkmanager"
-      "video"
-      "wheel"
-    ];
-    shell = pkgs.fish;
-  };
-
-  environment.systemPackages = with pkgs; [
-    (hiPrio parallel)
-    aichat
-    alacritty
-    alejandra
-    android-tools
-    anki
-    apktool
-    bc
-    bindfs
-    black
-    blueman
-    bottles
-    brightnessctl
-    btop
-    burpsuite
-    cabal-install
-    cabextract
-    cargo
-    cliphist
-    code-cursor
-    coreutils
-    curl
-    deadnix
-    direnv
-    dunst
-    exploitdb
-    fdupes
-    ffmpeg
-    ffmpegthumbnailer
-    file
-    foot
-    fuse
-    gcc
-    gh
-    ghc
-    git
-    glow
-    gnumake
-    google-chrome
-    hashcat
-    haskell-language-server
-    haskellPackages.cabal-fmt
-    hyprshot
-    imagemagick
-    isort
-    jadx
-    john
-    jsbeautifier
-    kanshi
-    kmod
-    libnotify
-    libvirt
-    light
-    literate
-    lsb-release
-    mako
-    manix
-    metasploit
-    mokutil
-    moreutils
-    mpv
-    neovim
-    networkmanagerapplet
-    nil
-    nix-direnv
-    nix-init
-    nix-output-monitor
-    nix-prefetch-github
-    nixd
-    nixpkgs-fmt
-    nmap
-    obsidian
-    openvpn
-    ormolu
-    p7zip
-    pamixer
-    pavucontrol
-    pciutils
-    pipenv
-    pipx
-    playerctl
-    polkit
-    poppler
-    poppler_utils
-    pre-commit
-    pup
-    qemu
-    qimgv
-    quickemu
-    realesrgan-ncnn-vulkan
-    rofi-wayland
-    rust-analyzer
-    rustc
-    shellcheck
-    shfmt
-    slurp
-    snowfallorg.flake
-    socat
-    spacenavd
-    sqlmap
-    stack
-    stegseek
-    sway-contrib.grimshot
-    swtpm
-    swww
-    texliveTeTeX
-    tmux
-    unionfs-fuse
-    unixtools.xxd
-    unzip
-    uv
-    vdhcoapp
-    veracrypt
-    viu
-    waybar
-    wget
-    wine
-    winetricks
-    wineWowPackages.waylandFull
-    wl-clipboard
-    wlsunset
-    wofi
-    wordlists
-    xdg-utils
-    xfce.thunar
-    zip
-    zoxide
-    alejandra
-    direnv
-    git
-    gh
-    inotify-tools
-    nix-direnv
-    nix-output-monitor
-    parallel
-    mdbook
-    pandoc
-    shellcheck
-    pre-commit
-    btop
-    shfmt
-    manix
-    deadnix
-  ];
 }

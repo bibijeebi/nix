@@ -1,9 +1,10 @@
-{ezModules, inputs, pkgs, ...}: {
-  imports = with inputs; builtins.attrValues [
-    ezModules.qimgv
-    ezModules.alf
-    hyprland.homeModules.default
-  ];
+{ ezModules, inputs, pkgs, ... }: {
+  imports = with inputs;
+    builtins.attrValues [
+      ezModules.qimgv
+      ezModules.alf
+      hyprland.homeModules.default
+    ];
 
   home = {
     stateVersion = "24.11";
@@ -43,18 +44,17 @@
           name = pkg.pname;
           src = pkg.src;
         };
-      in
-        with pkgs.fishPlugins; [
-          (mkFishPlugin z)
-          (mkFishPlugin bass)
-          (mkFishPlugin fzf-fish)
-          (mkFishPlugin autopair)
-          (mkFishPlugin sponge)
-          (mkFishPlugin git-abbr)
-          (mkFishPlugin fish-you-should-use)
-          (mkFishPlugin done)
-          (mkFishPlugin tide)
-        ];
+      in with pkgs.fishPlugins; [
+        (mkFishPlugin z)
+        (mkFishPlugin bass)
+        (mkFishPlugin fzf-fish)
+        (mkFishPlugin autopair)
+        (mkFishPlugin sponge)
+        (mkFishPlugin git-abbr)
+        (mkFishPlugin fish-you-should-use)
+        (mkFishPlugin done)
+        (mkFishPlugin tide)
+      ];
     };
     kitty = {
       enable = true;
@@ -77,9 +77,10 @@
         mainBar = {
           layer = "top";
           position = "top";
-          modules-left = ["hyprland/workspaces" "hyprland/mode"];
-          modules-center = ["hyprland/window"];
-          modules-right = ["pulseaudio" "network" "cpu" "memory" "battery" "clock" "tray"];
+          modules-left = [ "hyprland/workspaces" "hyprland/mode" ];
+          modules-center = [ "hyprland/window" ];
+          modules-right =
+            [ "pulseaudio" "network" "cpu" "memory" "battery" "clock" "tray" ];
         };
       };
     };
@@ -165,9 +166,7 @@
       "$volume" = "pavucontrol";
 
       # Monitor configuration
-      monitor = [
-        "HDMI-A-1,1920x1080@60,0x0,1"
-      ];
+      monitor = [ "HDMI-A-1,1920x1080@60,0x0,1" ];
 
       # Input configuration
       input = {
@@ -219,10 +218,8 @@
       # Animations
       animations = {
         enabled = true;
-        bezier = [
-          "myBezier, 0.05, 0.9, 0.1, 1.05"
-          "linear, 0.0, 0.0, 1.0, 1.0"
-        ];
+        bezier =
+          [ "myBezier, 0.05, 0.9, 0.1, 1.05" "linear, 0.0, 0.0, 1.0, 1.0" ];
 
         animation = [
           "windows, 1, 7, myBezier"
