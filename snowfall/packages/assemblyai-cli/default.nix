@@ -1,14 +1,13 @@
-{
-  lib,
-  stdenv,
-  fetchurl,
-}:
+# packages/assemblyai-cli/default.nix
+{ lib, stdenv, fetchurl }:
+
 stdenv.mkDerivation rec {
   pname = "assemblyai-cli";
   version = "1.18.1";
 
   src = fetchurl {
-    url = "https://github.com/AssemblyAI/assemblyai-cli/releases/download/v${version}/assemblyai_${version}_linux_amd64.tar.gz";
+    url =
+      "https://github.com/AssemblyAI/assemblyai-cli/releases/download/v${version}/assemblyai_${version}_linux_amd64.tar.gz";
     sha256 = "sha256-veLKiXT8RJ+XzowiCr+y05eQvHyhBiZ6JgwJ2/i+0yA=";
   };
 
@@ -25,7 +24,6 @@ stdenv.mkDerivation rec {
     description = "CLI for the AssemblyAI API";
     homepage = "https://github.com/AssemblyAI/assemblyai-cli";
     license = licenses.asl20;
-    maintainers = []; # Add maintainers if known
     platforms = platforms.linux;
     mainProgram = "assemblyai";
   };

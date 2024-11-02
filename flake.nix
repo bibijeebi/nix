@@ -1,9 +1,12 @@
 {
   inputs = {
-    # Core
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs";
 
-    # Framework
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     snowfall-lib = {
       url = "github:snowfallorg/lib";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -14,41 +17,40 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # System Management
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # Applications
-    nixarr.url = "github:rasmus-kirk/nixarr";
-    erosanix.url = "github:emmanuelrosa/erosanix";
-
     musnix.url = "github:musnix/musnix";
+    nixarr.url = "github:rasmus-kirk/nixarr";
+    hyprland.url = "github:hyprwm/Hyprland";
   };
 
   outputs = inputs:
     inputs.snowfall-lib.mkFlake {
       inherit inputs;
       src = ./.;
-      snowfall.root = ./snowfall;
-      channels-config.allowUnfree = true;
+
+      snowfall = {
+        root = ./snowfall;
+        meta = {
+          name = "bibijeebi";
+          title = "Bibi's NixOS Configuration";
+        };
+      };
+
+      overlays = with inputs; [ snowfall-flake.overlays."package/flake" ];
+
+      channels-config = {
+        allowUnfree = true;
+        permittedInsecurePackages = [ ];
+      };
 
       systems.modules.nixos = with inputs; [
-        home-manager.nixosModules.home-manager
+        hyprland.nixosModules.default
+        musnix.nixosModules.default
         nixarr.nixosModules.default
-        musnix.nixosModules.musnix
-      ];
-
-      overlays = with inputs; [
-        snowfall-flake.overlays."package/flake"
       ];
 
       outputs-builder = channels: {
-        formatter = channels.nixpkgs.alejandra;
-        devShells.default = channels.nixpkgs.callPackage ./snowfall/shell.nix {
-          inherit channels;
-        };
+        formatter = channels.nixpkgs.nixfmt-classic;
+        devShells.default = channels.nixpkgs.callPackage ./shell.nix { };
       };
     };
 }
